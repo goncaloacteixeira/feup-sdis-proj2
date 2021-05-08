@@ -5,6 +5,8 @@ import operations.Operation;
 import peer.Peer;
 import peer.chord.ChordReference;
 
+import javax.net.ssl.SSLEngine;
+import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 
 public abstract class Message {
@@ -19,6 +21,7 @@ public abstract class Message {
         this.operation = operation;
         this.sender = sender;
         this.originalSender = originalSender;
+        this.body = new byte[0];
     }
 
     public Message(String type, String operation, ChordReference sender, ChordReference originalSender, byte[] body) {
@@ -31,7 +34,7 @@ public abstract class Message {
 
     public abstract byte[] encode();
 
-    public abstract Operation getOperation(Peer context);
+    public abstract Operation getOperation(Peer context, SocketChannel channel, SSLEngine engine);
 
     public static Message parse(byte[] buffer, int size) {
         String packetData = new String(buffer);
@@ -58,7 +61,7 @@ public abstract class Message {
 
         if (type.equals("CHORD")) {
             // parse chord message
-            return ChordMessage.parse(sender, originalSender, parts[0].split("\r\n")[1]);
+            return ChordMessage.parse(sender, originalSender, parts[0].split("\r\n")[1], body);
         } else if (type.equals("APP")) {
             // parse application message
 

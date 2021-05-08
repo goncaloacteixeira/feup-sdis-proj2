@@ -6,6 +6,8 @@ import operations.chord.ChordOperation;
 import peer.Peer;
 import peer.chord.ChordReference;
 
+import javax.net.ssl.SSLEngine;
+import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 
 public abstract class ChordMessage extends Message {
@@ -18,7 +20,7 @@ public abstract class ChordMessage extends Message {
         super(type, operation, sender, originalSender, body);
     }
 
-    public static ChordMessage parse(ChordReference sender, ChordReference original, String header) {
+    public static ChordMessage parse(ChordReference sender, ChordReference original, String header, byte[] body) {
         header = header.replaceAll("^ +| +$|( )+", "$1").trim();
         String[] args = header.split(" ");
         String chordType = args[0];
@@ -26,14 +28,16 @@ public abstract class ChordMessage extends Message {
         switch (chordType) {
             case "JOIN":
                 return new Join(sender, original);
+            case "GUID":
+                return new Guid(sender, original, body);
             default:
                 return null;
         }
     }
 
     @Override
-    public Operation getOperation(Peer context) {
-        return ChordOperation.parse(this, context);
+    public Operation getOperation(Peer context, SocketChannel channel, SSLEngine engine) {
+        return ChordOperation.parse(this, context, channel, engine);
     }
 
     @Override

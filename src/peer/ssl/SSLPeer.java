@@ -66,6 +66,8 @@ public abstract class SSLPeer {
         this.active = true;
     }
 
+    public abstract Message readWithReply(SocketChannel socketChannel, SSLEngine engine) throws Exception;
+
     public abstract void read(SocketChannel socketChannel, SSLEngine engine) throws Exception;
 
     public abstract void write(SocketChannel socketChannel, SSLEngine engine, byte[] message) throws IOException;
@@ -115,7 +117,7 @@ public abstract class SSLPeer {
         try {
             this._start();
         } catch (Exception e) {
-            log.debug("Error on start: " + e.getMessage());
+            log.error("Error on start: " + e);
         }
     }
 
@@ -322,7 +324,7 @@ public abstract class SSLPeer {
         return tmf.getTrustManagers();
     }
 
-    protected void sendMessage(SSLConnection bootPeerConnection, Message message) {
+    public void sendMessage(SSLConnection bootPeerConnection, Message message) {
         try {
             this.write(bootPeerConnection.getSocketChannel(), bootPeerConnection.getEngine(), message.encode());
         } catch (IOException e) {

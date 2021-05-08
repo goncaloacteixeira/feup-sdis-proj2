@@ -51,6 +51,14 @@ public class Peer extends ChordPeer {
 
     @Override
     public void read(SocketChannel socketChannel, SSLEngine engine) throws Exception {
+        Message message = readWithReply(socketChannel, engine);
+        // fixme -> send to an executor
+        if (message != null)
+            message.getOperation(this, socketChannel, engine).run();
+    }
+
+    @Override
+    public Message readWithReply(SocketChannel socketChannel, SSLEngine engine) throws Exception {
         log.debug("[PEER] Reading data...");
 
         this.peerNetData.clear();
@@ -76,7 +84,7 @@ public class Peer extends ChordPeer {
                         }
                         Message message = Message.parse(buffer, size);
                         log.debug("Message received: " + message);
-                        break;
+                        return message;
                     case BUFFER_OVERFLOW:
                         this.peerApplicationData = this.enlargeApplicationBuffer(engine, this.peerApplicationData);
                         break;
@@ -97,6 +105,7 @@ public class Peer extends ChordPeer {
             handleEndOfStream(socketChannel, engine);
             log.debug("Connection closed!");
         }
+        return null;
     }
 
     @Override
@@ -128,5 +137,9 @@ public class Peer extends ChordPeer {
                     throw new IllegalStateException("Invalid SSL Status: " + result.getStatus());
             }
         }
+    }
+
+    public ChordReference getReference() {
+        return new ChordReference(this.address, this.guid);
     }
 }

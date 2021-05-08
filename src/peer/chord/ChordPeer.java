@@ -1,16 +1,17 @@
 package peer.chord;
 
 import messages.Message;
+import messages.chord.Guid;
 import messages.chord.Join;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import peer.Constants;
+import peer.Peer;
 import peer.ssl.SSLConnection;
 import peer.ssl.SSLPeer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
 
 public abstract class ChordPeer extends SSLPeer {
     private final static Logger log = LogManager.getLogger(ChordPeer.class);
@@ -53,7 +54,8 @@ public abstract class ChordPeer extends SSLPeer {
                 this.sendMessage(bootPeerConnection, message);
                 // wait for GUID message
                 // GUID task will automatically assign the GUID to the peer
-                this.read(bootPeerConnection.getSocketChannel(), bootPeerConnection.getEngine());
+                Guid reply = (Guid) this.readWithReply(bootPeerConnection.getSocketChannel(), bootPeerConnection.getEngine());
+                reply.getOperation((Peer) this, bootPeerConnection.getSocketChannel(), bootPeerConnection.getEngine()).run();
                 // close connection for now, it will be necessary for the copy request
                 this.closeConnection(bootPeerConnection);
                 // give some time to process new peer GUID
@@ -78,12 +80,15 @@ public abstract class ChordPeer extends SSLPeer {
     }
 
     public int generateNewKey() {
-        for (int i = ++this.lastGUID; i < Constants.CHORD_MAX_PEERS; i++) {
-            if (this.lookup(i) == null) {
-                this.lastGUID = i;
-                return i;
+        int currentGUID = (this.lastGUID + 1) % Constants.CHORD_MAX_PEERS;
+        while (currentGUID != this.lastGUID) {
+            if (this.lookup(currentGUID) == null) {
+                this.lastGUID = currentGUID;
+                return currentGUID;
             }
+            currentGUID = (currentGUID + 1) % Constants.CHORD_MAX_PEERS;
         }
+
         return -1;
     }
 
