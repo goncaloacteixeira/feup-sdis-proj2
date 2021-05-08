@@ -1,10 +1,7 @@
 package peer.chord;
 
 import messages.Message;
-import messages.chord.Guid;
-import messages.chord.Join;
-import messages.chord.Lookup;
-import messages.chord.LookupReply;
+import messages.chord.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import peer.Constants;
@@ -19,6 +16,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public abstract class ChordPeer extends SSLPeer {
     private final static Logger log = LogManager.getLogger(ChordPeer.class);
@@ -28,6 +28,8 @@ public abstract class ChordPeer extends SSLPeer {
     protected ChordReference bootPeer;
     protected ChordReference predecessor;
     protected ChordReference[] routingTable = new ChordReference[Constants.M_BIT];
+    protected ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(2);
+    private int nextFinger = 1;
 
     public ChordPeer(InetSocketAddress address, boolean boot) throws Exception {
         super(address, boot);
@@ -35,17 +37,20 @@ public abstract class ChordPeer extends SSLPeer {
         this.bootPeer = new ChordReference(address, -1);
     }
 
-    private int lastGUID = 0;
+    protected void startPeriodicChecks() {
+        scheduler.scheduleAtFixedRate(this::fixFingers, 0, 1, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(this::stabilize, 1, 4, TimeUnit.SECONDS);
+    }
 
-    public ChordReference successor() {
+    public synchronized ChordReference successor() {
         return routingTable[0];
     }
 
-    public ChordReference getFinger(int position) {
+    public synchronized ChordReference getFinger(int position) {
         return routingTable[position - 1];
     }
 
-    public void setFinger(int position, ChordReference finger) {
+    public synchronized void setFinger(int position, ChordReference finger) {
         this.routingTable[position - 1] = finger;
     }
 
@@ -64,6 +69,7 @@ public abstract class ChordPeer extends SSLPeer {
     public void join() {
         if (this.boot) {
             this.guid = generateNewKey(this.address);
+            this.setSuccessor(new ChordReference(this.address, this.guid));
             log.debug("Peer was started as boot, assigning GUID:" + this.guid);
             return;
         }
@@ -115,15 +121,15 @@ public abstract class ChordPeer extends SSLPeer {
         this.boot = true;
     }
 
-    public ChordReference[] getRoutingTable() {
+    public synchronized ChordReference[] getRoutingTable() {
         return routingTable;
     }
 
-    public String getRoutingTableString() {
+    public synchronized String getRoutingTableString() {
         return routingTableToString(this.routingTable);
     }
 
-    public void setSuccessor(ChordReference finger) {
+    public synchronized void setSuccessor(ChordReference finger) {
         this.setFinger(1, finger);
     }
 
@@ -136,7 +142,6 @@ public abstract class ChordPeer extends SSLPeer {
         return String.join("\n", entries);
     }
 
-    @Deprecated
     public ChordReference findSuccessor(int guid) {
         ChordReference self = new ChordReference(this.address, this.guid);
 
@@ -180,8 +185,102 @@ public abstract class ChordPeer extends SSLPeer {
         return self;
     }
 
+    public synchronized ChordReference getPredecessor() {
+        return predecessor;
+    }
+
+    private ChordReference getPredecessorFromSuccessor() {
+        log.debug("Getting predecessor from successor...");
+
+        if (successor().getGuid() == this.guid) {
+            log.debug("Predecessor found: " + this.predecessor);
+            return this.predecessor;
+        }
+        try {
+            SSLConnection connection = this.connectToPeer(successor().getAddress(), true);
+
+            if (connection.handshake()) {
+                ChordReference self = new ChordReference(this.address, this.guid);
+                Message message = new Predecessor(self);
+                this.sendMessage(connection, message);
+                PredecessorReply reply = (PredecessorReply) this.readWithReply(connection.getSocketChannel(), connection.getEngine());
+                this.closeConnection(connection);
+                log.debug("Predecessor found: " + reply.getPredecessor());
+                return reply.getPredecessor();
+            } else {
+                log.debug("Handshake to boot peer failed");
+                return null;
+            }
+        } catch (IOException e) {
+            log.debug("Could not connect to boot, promoting itself to boot peer...");
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private void stabilize() {
+        log.debug("Performing stabilization...");
+        ChordReference predecessor;
+        try {
+            predecessor = this.getPredecessorFromSuccessor();
+        } catch (Exception e) {
+            return;
+        }
+        if (predecessor != null) {
+            if (between(predecessor.getGuid(), this.guid, successor().getGuid(), true)) {
+                log.debug("Successor Updated: " + predecessor);
+                this.setSuccessor(predecessor);
+            }
+        }
+        /* FIXME - notifications are buggy -> probably SSL Peer is poorly implemented
+        if (successor().getGuid() != this.guid)
+            this.notifyPeer(successor(), new ChordReference(this.address, this.guid));
+         */
+    }
+
+    private void fixFingers() {
+        log.debug("Fixing finger:" + nextFinger);
+        try {
+            this.setFinger(this.nextFinger, findSuccessor(this.guid + (int) Math.pow(2, this.nextFinger - 1)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        log.debug("Finger table after fixing:\n" + this.getRoutingTableString());
+        this.nextFinger++;
+        if (this.nextFinger > Constants.M_BIT) {
+            this.nextFinger = 1;
+        }
+    }
+
+    public synchronized void setPredecessor(ChordReference predecessor) {
+        this.predecessor = predecessor;
+    }
+
+    private void notifyPeer(ChordReference reference, ChordReference context) {
+        log.debug(String.format("Notifying Peer:%d about Peer:%d", reference.getGuid(), context.getGuid()));
+
+        try {
+            SSLConnection connection = this.connectToPeer(reference.getAddress(), false);
+
+            if (connection.handshake()) {
+                ChordReference self = new ChordReference(this.address, this.guid);
+                Message message = new Notification(self, context.toString().getBytes(StandardCharsets.UTF_8));
+                this.sendMessage(connection, message);
+            } else {
+                log.debug("Handshake to peer failed");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public ChordReference closestPrecedingNode(int guid) {
         for (int i = Constants.M_BIT; i >= 1; i--) {
+            if (getFinger(i) == null) continue;
             if (between(getFinger(i).getGuid(), this.guid, guid, true)) {
                 return getFinger(i);
             }

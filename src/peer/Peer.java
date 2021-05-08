@@ -14,10 +14,13 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Peer extends ChordPeer {
     private final static Logger log = LogManager.getLogger(Peer.class);
     private String sap;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(16);
 
     public static void main(String[] args) throws UnknownHostException {
         if (args.length < 3) {
@@ -41,6 +44,7 @@ public class Peer extends ChordPeer {
 
     protected void start() {
         this.join();
+        this.startPeriodicChecks();
         super.start();
     }
 
@@ -54,7 +58,7 @@ public class Peer extends ChordPeer {
         Message message = readWithReply(socketChannel, engine);
         // fixme -> send to an executor
         if (message != null)
-            message.getOperation(this, socketChannel, engine).run();
+            executorService.submit(message.getOperation(this, socketChannel, engine));
     }
 
     @Override

@@ -34,6 +34,12 @@ public abstract class ChordMessage extends Message {
                 return new Lookup(sender, body);
             case "LOOKUPREPLY":
                 return new LookupReply(sender, body);
+            case "PREDECESSOR":
+                return new Predecessor(sender);
+            case "PREDECESSORREPLY":
+                return new PredecessorReply(sender, body);
+            case "NOTIFICATION":
+                return new Notification(sender, body);
             default:
                 return null;
         }

@@ -5,7 +5,6 @@ import messages.chord.Guid;
 import messages.chord.Lookup;
 import messages.chord.LookupReply;
 import peer.Peer;
-import peer.chord.ChordPeer;
 import peer.chord.ChordReference;
 
 import javax.net.ssl.SSLEngine;

@@ -31,6 +31,12 @@ public abstract class ChordOperation extends Operation {
                 return new LookupOp(channel, engine, (Lookup) message, context);
             case "LOOKUPREPLY":
                 return new LookupReplyOp(channel, engine, (LookupReply) message, context);
+            case "PREDECESSOR":
+                return new PredecessorOp(channel, engine, (Predecessor) message, context);
+            case "PREDECESSORREPLY":
+                return new PredecessorReplyOp(channel, engine, (PredecessorReply) message, context);
+            case "NOTIFICATION":
+                return new NotificationOp(channel, engine, (Notification) message, context);
             default:
                 return null;
         }

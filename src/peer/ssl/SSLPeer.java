@@ -87,9 +87,16 @@ public abstract class SSLPeer {
             // can do something here...
         }
         engine.beginHandshake();
+        boolean handshake;
+        try {
+            handshake = this.doHandshake(socketChannel, engine);
+        } catch (IOException e) {
+            log.error("Could not validate handshake!");
+            return null;
+        }
 
         log.debug("Connected to Peer!");
-        return new SSLConnection(socketChannel, engine, this.doHandshake(socketChannel, engine));
+        return new SSLConnection(socketChannel, engine, handshake);
     }
 
     public void closeConnection(SSLConnection connection) throws IOException {
