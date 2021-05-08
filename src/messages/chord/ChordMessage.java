@@ -30,6 +30,10 @@ public abstract class ChordMessage extends Message {
                 return new Join(sender);
             case "GUID":
                 return new Guid(sender, body);
+            case "LOOKUP":
+                return new Lookup(sender, body);
+            case "LOOKUPREPLY":
+                return new LookupReply(sender, body);
             default:
                 return null;
         }

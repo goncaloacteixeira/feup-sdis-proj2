@@ -3,6 +3,8 @@ package peer.chord;
 import messages.Message;
 import messages.chord.Guid;
 import messages.chord.Join;
+import messages.chord.Lookup;
+import messages.chord.LookupReply;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import peer.Constants;
@@ -121,6 +123,10 @@ public abstract class ChordPeer extends SSLPeer {
         return routingTableToString(this.routingTable);
     }
 
+    public void setSuccessor(ChordReference finger) {
+        this.setFinger(1, finger);
+    }
+
     public static String routingTableToString(ChordReference[] routingTable) {
         List<String> entries = new ArrayList<>();
         for (int i = 0; i < Constants.M_BIT; i++) {
@@ -130,9 +136,64 @@ public abstract class ChordPeer extends SSLPeer {
         return String.join("\n", entries);
     }
 
-    public ChordReference lookup(int guid) {
-        // todo
-        return null;
+    @Deprecated
+    public ChordReference findSuccessor(int guid) {
+        ChordReference self = new ChordReference(this.address, this.guid);
+
+        if (successor() == null) {
+            return self;
+        }
+        if (between(guid, this.guid, successor().getGuid(), false)) {
+            return successor();
+        }
+
+        ChordReference closest = closestPrecedingNode(guid);
+        while (closest.getGuid() != guid) {
+            try {
+                SSLConnection connection = this.connectToPeer(closest.getAddress(), true);
+                if (connection.handshake()) {
+                    Message message = new Lookup(self, String.valueOf(guid).getBytes(StandardCharsets.UTF_8));
+                    this.sendMessage(connection, message);
+                    LookupReply reply = (LookupReply) this.readWithReply(connection.getSocketChannel(), connection.getEngine());
+                    this.closeConnection(connection);
+
+                    if (closest.getGuid() == reply.getReference().getGuid()) {
+                        log.debug("Successor is same: " + closest);
+                        return closest;
+                    }
+
+                    closest = reply.getReference();
+                    log.debug("New closest: " + closest.getGuid());
+                } else {
+                    log.debug("Handshake to peer failed");
+                    return null;
+                }
+            } catch (IOException e) {
+                log.debug("Could not connect to peer.");
+                return null;
+            } catch (Exception e) {
+                log.error("Could not send message!");
+                return null;
+            }
+        }
+
+        return self;
     }
 
+    public ChordReference closestPrecedingNode(int guid) {
+        for (int i = Constants.M_BIT; i >= 1; i--) {
+            if (between(getFinger(i).getGuid(), this.guid, guid, true)) {
+                return getFinger(i);
+            }
+        }
+        return new ChordReference(this.address, this.guid);
+    }
+
+    public static boolean between(int key, int lhs, int rhs, boolean exclusive) {
+        if (exclusive) {
+            return lhs < rhs ? lhs < key && key < rhs : rhs > key || key > lhs;
+        } else {
+            return lhs < rhs ? lhs < key && key <= rhs : rhs >= key || key > lhs;
+        }
+    }
 }
