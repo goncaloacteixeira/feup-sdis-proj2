@@ -14,7 +14,7 @@ public class Test {
     public static void main(String[] args) throws UnknownHostException {
         ChordReference reference = new ChordReference(new InetSocketAddress(InetAddress.getLocalHost(), 0), 0);
 
-        Message message = new Join(reference, reference);
+        Message message = new Join(reference);
 
         System.out.println(message);
         System.out.println(new String(message.encode(), StandardCharsets.UTF_8));

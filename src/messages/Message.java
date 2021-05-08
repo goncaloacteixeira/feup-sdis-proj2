@@ -13,22 +13,19 @@ public abstract class Message {
     protected final String type;
     protected final String operation;
     protected final ChordReference sender;
-    protected final ChordReference originalSender;
     protected byte[] body;
 
-    public Message(String type, String operation, ChordReference sender, ChordReference originalSender) {
+    public Message(String type, String operation, ChordReference sender) {
         this.type = type;
         this.operation = operation;
         this.sender = sender;
-        this.originalSender = originalSender;
         this.body = new byte[0];
     }
 
-    public Message(String type, String operation, ChordReference sender, ChordReference originalSender, byte[] body) {
+    public Message(String type, String operation, ChordReference sender, byte[] body) {
         this.type = type;
         this.operation = operation;
         this.sender = sender;
-        this.originalSender = originalSender;
         this.body = body;
     }
 
@@ -53,7 +50,6 @@ public abstract class Message {
         // saving the data
         String type = args[0];
         ChordReference sender = ChordReference.parse(args[1]);
-        ChordReference originalSender = ChordReference.parse(args[2]);
 
         byte[] body = new byte[0];
 
@@ -61,7 +57,7 @@ public abstract class Message {
 
         if (type.equals("CHORD")) {
             // parse chord message
-            return ChordMessage.parse(sender, originalSender, parts[0].split("\r\n")[1], body);
+            return ChordMessage.parse(sender, parts[0].split("\r\n")[1], body);
         } else if (type.equals("APP")) {
             // parse application message
 
@@ -81,10 +77,6 @@ public abstract class Message {
         return sender;
     }
 
-    public ChordReference getOriginalSender() {
-        return originalSender;
-    }
-
     public byte[] getBody() {
         return body;
     }
@@ -95,7 +87,6 @@ public abstract class Message {
                 "type='" + type + '\'' +
                 ", operation='" + operation + '\'' +
                 ", sender=" + sender +
-                ", originalSender=" + originalSender +
                 '}';
     }
 }

@@ -24,7 +24,7 @@ public abstract class ChordOperation extends Operation {
             case "JOIN":
                 return new JoinOp(channel, engine, message, context);
             case "GUID":
-                return new GuidOp(channel, engine, message, context);
+                return new GuidOp(channel, engine, (Guid) message, context);
             default:
                 return null;
         }

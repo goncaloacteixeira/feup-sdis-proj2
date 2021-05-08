@@ -23,7 +23,9 @@ public class JoinOp extends ChordOperation {
     public void run() {
         log.debug("Started JOIN operation message...");
 
-        Message message = new Guid(context.getReference(), context.getReference(), "1".getBytes(StandardCharsets.UTF_8));
+        int guid = context.generateNewKey();
+
+        Message message = new Guid(context.getReference(), String.valueOf(guid).getBytes(StandardCharsets.UTF_8));
 
         try {
             context.write(this.channel, this.engine, message.encode());

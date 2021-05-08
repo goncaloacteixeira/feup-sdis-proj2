@@ -38,6 +38,14 @@ public abstract class ChordPeer extends SSLPeer {
         return routingTable[position];
     }
 
+    public void setGuid(int guid) {
+        this.guid = guid;
+    }
+
+    public int getGuid() {
+        return guid;
+    }
+
     public void join() {
         if (this.boot) {
             log.debug("Peer was started as boot, assigning GUID:0...");
@@ -49,7 +57,7 @@ public abstract class ChordPeer extends SSLPeer {
             SSLConnection bootPeerConnection = this.connectToPeer(bootPeer.getAddress(), true);
             if (bootPeerConnection.handshake()) {
                 ChordReference self = new ChordReference(this.address, this.guid);
-                Message message = new Join(self, self);
+                Message message = new Join(self);
                 // send join
                 this.sendMessage(bootPeerConnection, message);
                 // wait for GUID message
