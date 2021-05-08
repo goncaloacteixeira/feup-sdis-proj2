@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
 
 public class ChordReference {
     private static final Logger log = LogManager.getLogger(ChordReference.class);
-    private final InetSocketAddress address;
-    private final int guid;
+    private InetSocketAddress address;
+    private int guid;
 
     public ChordReference(InetSocketAddress address, int guid) {
         this.address = address;
@@ -28,7 +28,7 @@ public class ChordReference {
     }
 
     public static ChordReference parse(String ref) {
-        Pattern p = Pattern.compile("^(\\d)+\\((.*?):(.*?)\\)$");
+        Pattern p = Pattern.compile("^(-?\\d+)\\((.*?):(.*?)\\)$");
         Matcher m = p.matcher(ref);
         if (m.matches()) {
             try {
@@ -46,5 +46,13 @@ public class ChordReference {
     @Override
     public String toString() {
         return String.format("%d(%s:%d)", this.guid, this.address.getAddress().getHostAddress(), this.address.getPort());
+    }
+
+    public void setGuid(int guid) {
+        this.guid = guid;
+    }
+
+    public void setAddress(InetSocketAddress address) {
+        this.address = address;
     }
 }

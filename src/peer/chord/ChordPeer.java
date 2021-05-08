@@ -12,6 +12,11 @@ import peer.ssl.SSLPeer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class ChordPeer extends SSLPeer {
     private final static Logger log = LogManager.getLogger(ChordPeer.class);
@@ -25,7 +30,7 @@ public abstract class ChordPeer extends SSLPeer {
     public ChordPeer(InetSocketAddress address, boolean boot) throws Exception {
         super(address, boot);
         this.boot = boot;
-        this.bootPeer = new ChordReference(address, 0);
+        this.bootPeer = new ChordReference(address, -1);
     }
 
     private int lastGUID = 0;
@@ -35,7 +40,11 @@ public abstract class ChordPeer extends SSLPeer {
     }
 
     public ChordReference getFinger(int position) {
-        return routingTable[position];
+        return routingTable[position - 1];
+    }
+
+    public void setFinger(int position, ChordReference finger) {
+        this.routingTable[position - 1] = finger;
     }
 
     public void setGuid(int guid) {
@@ -46,10 +55,14 @@ public abstract class ChordPeer extends SSLPeer {
         return guid;
     }
 
+    public ChordReference getBootPeer() {
+        return bootPeer;
+    }
+
     public void join() {
         if (this.boot) {
-            log.debug("Peer was started as boot, assigning GUID:0...");
-            this.guid = 0;
+            this.guid = generateNewKey(this.address);
+            log.debug("Peer was started as boot, assigning GUID:" + this.guid);
             return;
         }
         log.debug("Trying to join the CHORD circle on: " + this.bootPeer);
@@ -57,6 +70,7 @@ public abstract class ChordPeer extends SSLPeer {
             SSLConnection bootPeerConnection = this.connectToPeer(bootPeer.getAddress(), true);
             if (bootPeerConnection.handshake()) {
                 ChordReference self = new ChordReference(this.address, this.guid);
+
                 Message message = new Join(self);
                 // send join
                 this.sendMessage(bootPeerConnection, message);
@@ -81,23 +95,39 @@ public abstract class ChordPeer extends SSLPeer {
         }
     }
 
+    public static int generateNewKey(InetSocketAddress address) {
+        String toHash = address.getAddress().getHostAddress() + ":" + address.getPort();
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-1");
+        } catch (NoSuchAlgorithmException e) {
+            return -1;
+        }
+        byte[] hashed = digest.digest(toHash.getBytes(StandardCharsets.UTF_8));
+        return new String(hashed).hashCode() & 0x7fffffff % Constants.CHORD_MAX_PEERS;
+    }
+
     private void promote() {
-        this.guid = 0;
+        this.guid = generateNewKey(this.address);
         this.bootPeer = new ChordReference(this.address, this.guid);
         this.boot = true;
     }
 
-    public int generateNewKey() {
-        int currentGUID = (this.lastGUID + 1) % Constants.CHORD_MAX_PEERS;
-        while (currentGUID != this.lastGUID) {
-            if (this.lookup(currentGUID) == null) {
-                this.lastGUID = currentGUID;
-                return currentGUID;
-            }
-            currentGUID = (currentGUID + 1) % Constants.CHORD_MAX_PEERS;
-        }
+    public ChordReference[] getRoutingTable() {
+        return routingTable;
+    }
 
-        return -1;
+    public String getRoutingTableString() {
+        return routingTableToString(this.routingTable);
+    }
+
+    public static String routingTableToString(ChordReference[] routingTable) {
+        List<String> entries = new ArrayList<>();
+        for (int i = 0; i < Constants.M_BIT; i++) {
+            if (routingTable[i] == null) continue;
+            entries.add(String.format("%d-%s", i, routingTable[i]));
+        }
+        return String.join("\n", entries);
     }
 
     public ChordReference lookup(int guid) {

@@ -6,11 +6,15 @@ import messages.chord.Guid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import peer.Peer;
+import peer.chord.ChordPeer;
+import peer.chord.ChordReference;
 
 import javax.net.ssl.SSLEngine;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 
 public class JoinOp extends ChordOperation {
     private static final Logger log = LogManager.getLogger(JoinOp.class);
@@ -23,9 +27,14 @@ public class JoinOp extends ChordOperation {
     public void run() {
         log.debug("Started JOIN operation message...");
 
-        int guid = context.generateNewKey();
+        int guid = ChordPeer.generateNewKey(new InetSocketAddress(channel.socket().getInetAddress(), channel.socket().getPort()));
 
-        Message message = new Guid(context.getReference(), String.valueOf(guid).getBytes(StandardCharsets.UTF_8));
+        String body = String.format("%d\n::\n%s", guid, context.getRoutingTableString());
+
+        Message message = new Guid(context.getReference(), body.getBytes(StandardCharsets.UTF_8));
+
+        System.out.println(context.getReference());
+        System.out.println(message);
 
         try {
             context.write(this.channel, this.engine, message.encode());

@@ -66,6 +66,10 @@ public abstract class SSLPeer {
         this.active = true;
     }
 
+    public InetSocketAddress getAddress() {
+        return address;
+    }
+
     public abstract Message readWithReply(SocketChannel socketChannel, SSLEngine engine) throws Exception;
 
     public abstract void read(SocketChannel socketChannel, SSLEngine engine) throws Exception;
@@ -118,6 +122,7 @@ public abstract class SSLPeer {
             this._start();
         } catch (Exception e) {
             log.error("Error on start: " + e);
+            e.printStackTrace();
         }
     }
 
