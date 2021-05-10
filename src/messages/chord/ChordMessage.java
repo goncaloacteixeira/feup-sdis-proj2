@@ -5,6 +5,7 @@ import operations.Operation;
 import operations.chord.ChordOperation;
 import peer.Peer;
 import peer.chord.ChordReference;
+import peer.ssl.SSLConnection;
 
 import javax.net.ssl.SSLEngine;
 import java.nio.channels.SocketChannel;
@@ -46,8 +47,8 @@ public abstract class ChordMessage extends Message {
     }
 
     @Override
-    public Operation getOperation(Peer context, SocketChannel channel, SSLEngine engine) {
-        return ChordOperation.parse(this, context, channel, engine);
+    public Operation getOperation(Peer context, SSLConnection connection) {
+        return ChordOperation.parse(this, context, connection);
     }
 
     @Override

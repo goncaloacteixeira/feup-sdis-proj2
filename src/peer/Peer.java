@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import peer.chord.ChordPeer;
 import peer.chord.ChordReference;
+import peer.ssl.SSLConnection;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
@@ -42,7 +43,7 @@ public class Peer extends ChordPeer {
         }
     }
 
-    protected void start() {
+    public void start() {
         this.join();
         this.startPeriodicChecks();
         super.start();
@@ -54,88 +55,102 @@ public class Peer extends ChordPeer {
     }
 
     @Override
-    public void read(SocketChannel socketChannel, SSLEngine engine) throws Exception {
-        Message message = readWithReply(socketChannel, engine);
-        // fixme -> send to an executor
+    public void read(SSLConnection connection) throws Exception {
+        Message message = (Message) readWithReply(connection);
         if (message != null)
-            executorService.submit(message.getOperation(this, socketChannel, engine));
+            executorService.submit(message.getOperation(this, connection));
     }
 
     @Override
-    public Message readWithReply(SocketChannel socketChannel, SSLEngine engine) throws Exception {
+    public Object readWithReply(SSLConnection connection) throws Exception {
         log.debug("[PEER] Reading data...");
 
-        this.peerNetData.clear();
-        int bytesRead = socketChannel.read(this.peerNetData);
+        SSLEngine engine = connection.getEngine();
+
+        connection.getPeerNetData().clear();
+
+        int bytesRead = connection.getSocketChannel().read(connection.getPeerNetData());
         if (bytesRead > 0) {
-            this.peerNetData.flip();
-            while (this.peerNetData.hasRemaining()) {
-                peerApplicationData.clear();
-                SSLEngineResult result = engine.unwrap(this.peerNetData, this.peerApplicationData);
+            connection.getPeerNetData().flip();
+
+            Message message = null;
+
+            while (connection.getPeerNetData().hasRemaining()) {
+                connection.getPeerData().clear();
+                SSLEngineResult result = engine.unwrap(connection.getPeerNetData(), connection.getPeerData());
+
                 switch (result.getStatus()) {
                     case OK:
-                        this.peerApplicationData.flip();
+                        connection.getPeerData().flip();
 
                         byte[] buffer;
-                        int size = peerApplicationData.remaining();
-                        if (peerApplicationData.hasArray()) {
-                            buffer = Arrays.copyOfRange(peerApplicationData.array(),
-                                    peerApplicationData.arrayOffset() + peerApplicationData.position(),
+                        int size = connection.getPeerData().remaining();
+                        if (connection.getPeerData().hasArray()) {
+                            buffer = Arrays.copyOfRange(connection.getPeerData().array(),
+                                    connection.getPeerData().arrayOffset() + connection.getPeerData().position(),
                                     size);
                         } else {
-                            buffer = new byte[peerApplicationData.remaining()];
-                            peerApplicationData.duplicate().get(buffer);
+                            buffer = new byte[connection.getPeerData().remaining()];
+                            connection.getPeerData().duplicate().get(buffer);
                         }
-                        Message message = Message.parse(buffer, size);
+                        System.out.println(Arrays.toString(buffer));
+                        message = Message.parse(buffer, size);
                         log.debug("Message received: " + message);
-                        return message;
+                        break;
                     case BUFFER_OVERFLOW:
-                        this.peerApplicationData = this.enlargeApplicationBuffer(engine, this.peerApplicationData);
+                        connection.setPeerData(this.enlargeApplicationBuffer(engine, connection.getPeerData()));
                         break;
                     case BUFFER_UNDERFLOW:
-                        this.peerNetData = this.handleBufferUnderflow(engine, this.peerNetData);
+                        connection.setPeerNetData(this.handleBufferUnderflow(engine, connection.getPeerNetData()));
                         break;
                     case CLOSED:
                         log.debug("The other peer requests closing the connection");
-                        this.closeConnection(socketChannel, engine);
+                        // this.closeConnection(connection);
+                        connection.getEngine().closeOutbound();
+                        connection.getSocketChannel().close();
                         log.debug("Connection closed!");
-                        break;
+                        return null;
                     default:
                         throw new IllegalStateException("Invalid SSL Status: " + result.getStatus());
                 }
             }
+
+            return message;
         } else if (bytesRead < 0) {
             log.error("Received EOS. Trying to close connection...");
-            handleEndOfStream(socketChannel, engine);
+            handleEndOfStream(connection);
             log.debug("Connection closed!");
         }
+
         return null;
     }
 
     @Override
-    public void write(SocketChannel socketChannel, SSLEngine engine, byte[] message) throws IOException {
+    public void write(SSLConnection connection, byte[] message) throws IOException {
         log.debug("[PEER] Writing data...");
 
-        this.applicationData.clear();
-        this.applicationData.put(message);
-        this.applicationData.flip();
-        while (this.applicationData.hasRemaining()) {
-            this.netData.clear();
-            SSLEngineResult result = engine.wrap(this.applicationData, this.netData);
+        SSLEngine engine = connection.getEngine();
+
+        connection.getAppData().clear();
+        connection.getAppData().put(message);
+        connection.getAppData().flip();
+        while (connection.getAppData().hasRemaining()) {
+            connection.getNetData().clear();
+            SSLEngineResult result = engine.wrap(connection.getAppData(), connection.getNetData());
             switch (result.getStatus()) {
                 case OK:
-                    this.netData.flip();
+                    connection.getNetData().flip();
                     int bytesWritten = 0;
-                    while (this.netData.hasRemaining()) {
-                        bytesWritten += socketChannel.write(this.netData);
+                    while (connection.getNetData().hasRemaining()) {
+                        bytesWritten += connection.getSocketChannel().write(connection.getNetData());
                     }
                     log.debug("Message Sent: " + Message.parse(message, message.length));
                     break;
                 case BUFFER_OVERFLOW:
-                    this.netData = enlargePacketBuffer(engine, this.netData);
+                    connection.setNetData(enlargePacketBuffer(engine, connection.getNetData()));
                     break;
                 case CLOSED:
-                    this.closeConnection(socketChannel, engine);
+                    this.closeConnection(connection);
                     return;
                 default:
                     throw new IllegalStateException("Invalid SSL Status: " + result.getStatus());

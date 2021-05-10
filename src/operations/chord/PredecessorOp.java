@@ -5,6 +5,7 @@ import messages.chord.ChordMessage;
 import messages.chord.Predecessor;
 import messages.chord.PredecessorReply;
 import peer.Peer;
+import peer.ssl.SSLConnection;
 
 import javax.net.ssl.SSLEngine;
 import java.io.IOException;
@@ -12,8 +13,8 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 
 public class PredecessorOp extends ChordOperation {
-    public PredecessorOp(SocketChannel channel, SSLEngine engine, Predecessor message, Peer context) {
-        super(channel, engine, message, context);
+    public PredecessorOp(SSLConnection connection, Predecessor message, Peer context) {
+        super(connection, message, context);
     }
 
     @Override
@@ -27,7 +28,7 @@ public class PredecessorOp extends ChordOperation {
 
         Message message = new PredecessorReply(context.getReference(), predecessor.getBytes(StandardCharsets.UTF_8));
         try {
-            context.write(channel, engine, message.encode());
+            context.write(connection, message.encode());
         } catch (IOException e) {
             e.printStackTrace();
         }

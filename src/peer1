@@ -1,0 +1,53 @@
+javax.net.ssl|DEBUG|01|main|2021-05-10 13:33:29.699 BST|SSLCipher.java:438|jdk.tls.keyLimits:  entry = AES/GCM/NoPadding KeyUpdate 2^37. AES/GCM/NOPADDING:KEYUPDATE = 137438953472
+[DEBUG] 2021-05-10 13:33:30.147 [Thread-0] ChordPeer - Trying to join the CHORD circle on: -1(127.0.0.1:8001)
+[DEBUG] 2021-05-10 13:33:30.178 [Thread-0] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|13|pool-2-thread-1|2021-05-10 13:33:30.242 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|13|pool-2-thread-1|2021-05-10 13:33:30.242 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|13|pool-2-thread-1|2021-05-10 13:33:30.242 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:33:30.305 [Thread-0] SSLPeer - Handshake Valid!
+[DEBUG] 2021-05-10 13:33:30.306 [Thread-0] SSLPeer - Connected to Peer on: localhost/127.0.0.1:8001
+[DEBUG] 2021-05-10 13:33:30.308 [Thread-0] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:33:30.318 [Thread-0] Peer - Message Sent: Message{type='CHORD', operation='JOIN', sender=-1(192.168.1.235:55799)}
+[DEBUG] 2021-05-10 13:33:30.318 [Thread-0] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:33:30.334 [Thread-0] Peer - Message received: Guid{type='CHORD', operation='GUID', sender=29(127.0.0.1:8001), guid=252}
+[DEBUG] 2021-05-10 13:33:30.338 [pool-4-thread-1] GuidOp - Started GUID operation...
+[DEBUG] 2021-05-10 13:33:30.339 [Thread-0] SSLPeer - [PEER] Online and waiting connections on: /192.168.1.235:55799
+[DEBUG] 2021-05-10 13:33:30.340 [pool-4-thread-1] GuidOp - New GUID:252
+[DEBUG] 2021-05-10 13:33:30.341 [pool-4-thread-1] GuidOp - Getting successor from peer: 29
+[DEBUG] 2021-05-10 13:33:30.341 [pool-4-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:33:30.342 [pool-4-thread-1] Peer - Message Sent: Lookup{type='CHORD', operation='LOOKUP', sender=252(192.168.1.235:55799), target=252}
+[DEBUG] 2021-05-10 13:33:30.342 [pool-4-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:33:30.356 [pool-4-thread-1] Peer - Message received: LookupReply{type='CHORD', operation='LOOKUPREPLY', sender=29(127.0.0.1:8001), reference=29(127.0.0.1:8001)}
+[DEBUG] 2021-05-10 13:33:30.356 [pool-4-thread-1] GuidOp - Got successor: 29(127.0.0.1:8001)
+javax.net.ssl|ALL|14|pool-4-thread-1|2021-05-10 13:33:30.356 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:33:30.357 [pool-4-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|WARNING|14|pool-4-thread-1|2021-05-10 13:33:30.358 BST|SSLEngineOutputRecord.java:173|outbound has closed, ignore outbound application data
+[DEBUG] 2021-05-10 13:33:30.358 [pool-4-thread-1] SSLPeer - Handshake Valid!
+[DEBUG] 2021-05-10 13:33:35.342 [pool-3-thread-1] ChordPeer - Fixing finger:1
+[DEBUG] 2021-05-10 13:33:35.343 [pool-3-thread-1] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 13:33:37.351 [pool-3-thread-1] ChordPeer - Fixing finger:2
+[DEBUG] 2021-05-10 13:33:37.351 [pool-3-thread-1] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 13:33:39.343 [pool-3-thread-1] ChordPeer - Fixing finger:3
+[DEBUG] 2021-05-10 13:33:39.343 [pool-3-thread-1] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 13:33:40.342 [pool-3-thread-2] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:33:40.342 [pool-3-thread-2] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:33:40.345 [pool-3-thread-2] SSLPeer - Starting handshake...
+[DEBUG] 2021-05-10 13:33:41.355 [pool-3-thread-1] ChordPeer - Fixing finger:4
+[DEBUG] 2021-05-10 13:33:41.355 [pool-3-thread-1] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 13:33:43.342 [pool-3-thread-1] ChordPeer - Fixing finger:5
+[DEBUG] 2021-05-10 13:33:43.342 [pool-3-thread-1] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)

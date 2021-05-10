@@ -18,6 +18,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,14 +27,11 @@ public abstract class SSLPeer {
     public static final Logger log = LogManager.getLogger(SSLPeer.class);
 
     protected InetSocketAddress address;
-    protected ByteBuffer applicationData;
-    protected ByteBuffer netData;
-    protected ByteBuffer peerApplicationData;
-    protected ByteBuffer peerNetData;
+
     private boolean active;
     private final SSLContext context;
     private final Selector selector;
-    protected ExecutorService executor = Executors.newSingleThreadExecutor();
+    protected ExecutorService executor = Executors.newFixedThreadPool(16);
 
     public SSLPeer(InetSocketAddress bootAddress, boolean boot) throws Exception {
         if (boot) {
@@ -42,18 +40,11 @@ public abstract class SSLPeer {
             this.address = new InetSocketAddress(InetAddress.getLocalHost(), 0);
         }
 
-        this.context = SSLContext.getInstance("TLSv1.2");
+        this.context = SSLContext.getInstance("TLSv1.3");
         context.init(
                 this.createKeyManager("resources/server.jks", "sdisg27", "sdisg27"),
                 this.createTrustManager("resources/truststore.jks", "sdisg27"),
                 new SecureRandom());
-
-        SSLSession dummy = context.createSSLEngine().getSession();
-        this.applicationData = ByteBuffer.allocate(dummy.getApplicationBufferSize());
-        this.netData = ByteBuffer.allocate(dummy.getPacketBufferSize());
-        this.peerApplicationData = ByteBuffer.allocate(dummy.getApplicationBufferSize());
-        this.peerNetData = ByteBuffer.allocate(dummy.getPacketBufferSize());
-        dummy.invalidate();
 
         this.selector = SelectorProvider.provider().openSelector();
         ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
@@ -70,43 +61,52 @@ public abstract class SSLPeer {
         return address;
     }
 
-    public abstract Message readWithReply(SocketChannel socketChannel, SSLEngine engine) throws Exception;
+    public abstract Object readWithReply(SSLConnection connection) throws Exception;
 
-    public abstract void read(SocketChannel socketChannel, SSLEngine engine) throws Exception;
+    public abstract void read(SSLConnection connection) throws Exception;
 
-    public abstract void write(SocketChannel socketChannel, SSLEngine engine, byte[] message) throws IOException;
+    public abstract void write(SSLConnection connection, byte[] message) throws IOException;
 
     public SSLConnection connectToPeer(InetSocketAddress socketAddress, boolean blocking) throws IOException {
         SSLEngine engine = context.createSSLEngine(socketAddress.getAddress().getHostAddress(), socketAddress.getPort());
         engine.setUseClientMode(true);
 
+        ByteBuffer appData = ByteBuffer.allocate(engine.getSession().getApplicationBufferSize());
+        ByteBuffer netData = ByteBuffer.allocate(engine.getSession().getPacketBufferSize());
+        ByteBuffer peerData = ByteBuffer.allocate(engine.getSession().getApplicationBufferSize());
+        ByteBuffer peerNetData = ByteBuffer.allocate(engine.getSession().getPacketBufferSize());
+
         SocketChannel socketChannel = SocketChannel.open();
         socketChannel.configureBlocking(blocking);
         socketChannel.connect(socketAddress);
+
+        SSLConnection connection = new SSLConnection(socketChannel, engine, false, appData, netData, peerData, peerNetData);
+
         while (!socketChannel.finishConnect()) {
             // can do something here...
         }
         engine.beginHandshake();
-        boolean handshake;
         try {
-            handshake = this.doHandshake(socketChannel, engine);
+            connection.setHandshake(this.doHandshake(connection));
         } catch (IOException e) {
             log.error("Could not validate handshake!");
-            return null;
+            return connection;
         }
 
-        log.debug("Connected to Peer!");
-        return new SSLConnection(socketChannel, engine, handshake);
+        log.debug("Connected to Peer on: " + socketAddress);
+        log.debug("Channel: " + socketChannel);
+        return connection;
     }
+
 
     public void closeConnection(SSLConnection connection) throws IOException {
         connection.getEngine().closeOutbound();
+        this.doHandshake(connection);
         connection.getSocketChannel().close();
-        log.debug("Connection Successfully Closed!");
     }
 
     private void accept(SelectionKey key) throws Exception {
-        log.debug("[PEER] Received new connection request");
+        log.debug("Received new connection request");
 
         SocketChannel socketChannel = ((ServerSocketChannel) key.channel()).accept();
         socketChannel.configureBlocking(false);
@@ -114,17 +114,26 @@ public abstract class SSLPeer {
         SSLEngine engine = this.context.createSSLEngine();
         engine.setUseClientMode(false);
         engine.setNeedClientAuth(true);
+
+        ByteBuffer appData = ByteBuffer.allocate(engine.getSession().getApplicationBufferSize());
+        ByteBuffer netData = ByteBuffer.allocate(engine.getSession().getPacketBufferSize());
+        ByteBuffer peerData = ByteBuffer.allocate(engine.getSession().getApplicationBufferSize());
+        ByteBuffer peerNetData = ByteBuffer.allocate(engine.getSession().getPacketBufferSize());
+
+        SSLConnection connection = new SSLConnection(socketChannel, engine, false, appData, netData, peerData, peerNetData);
+
         engine.beginHandshake();
 
-        if (this.doHandshake(socketChannel, engine)) {
-            socketChannel.register(this.selector, SelectionKey.OP_READ, engine);
+        if (this.doHandshake(connection)) {
+            connection.setHandshake(true);
+            socketChannel.register(this.selector, SelectionKey.OP_READ, connection);
         } else {
             socketChannel.close();
             log.debug("Connection closed due to failed handshake");
         }
     }
 
-    protected void start() {
+    public void start() {
         try {
             this._start();
         } catch (Exception e) {
@@ -148,7 +157,7 @@ public abstract class SSLPeer {
                 if (key.isAcceptable()) {
                     this.accept(key);
                 } else if (key.isReadable()) {
-                    this.read((SocketChannel) key.channel(), (SSLEngine) key.attachment());
+                    this.read((SSLConnection) key.attachment());
                 }
             }
         }
@@ -162,23 +171,26 @@ public abstract class SSLPeer {
         this.selector.wakeup();
     }
 
-    protected boolean doHandshake(SocketChannel socketChannel, SSLEngine engine) throws IOException {
+    protected boolean doHandshake(SSLConnection connection) throws IOException {
         log.debug("Starting handshake...");
 
         SSLEngineResult result;
         SSLEngineResult.HandshakeStatus handshakeStatus;
 
+        SSLEngine engine = connection.getEngine();
+        SocketChannel socketChannel = connection.getSocketChannel();
+
         int appBufferSize = engine.getSession().getApplicationBufferSize();
         ByteBuffer applicationData = ByteBuffer.allocate(appBufferSize);
         ByteBuffer peerApplicationData = ByteBuffer.allocate(appBufferSize);
-        netData.clear();
-        peerNetData.clear();
+        connection.getNetData().clear();
+        connection.getPeerNetData().clear();
 
         handshakeStatus = engine.getHandshakeStatus();
         while (handshakeStatus != SSLEngineResult.HandshakeStatus.FINISHED && handshakeStatus != SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING) {
             switch (handshakeStatus) {
                 case NEED_UNWRAP:
-                    if (socketChannel.read(peerNetData) < 0) {
+                    if (socketChannel.read(connection.getPeerNetData()) < 0) {
                         if (engine.isInboundDone() && engine.isOutboundDone()) {
                             return false;
                         }
@@ -191,13 +203,16 @@ public abstract class SSLPeer {
                         handshakeStatus = engine.getHandshakeStatus();
                         break;
                     }
-                    peerNetData.flip();
+                    connection.getPeerNetData().flip();
                     try {
-                        result = engine.unwrap(peerNetData, peerApplicationData);
-                        peerNetData.compact();
+                        do {
+                            result = engine.unwrap(connection.getPeerNetData(), peerApplicationData);
+                        } while (connection.getPeerNetData().hasRemaining() || result.bytesProduced() > 0);
+
+                        connection.getPeerNetData().compact();
                         handshakeStatus = result.getHandshakeStatus();
                     } catch (SSLException e) {
-                        log.error("Error processing data, will try to close gracefully...");
+                        log.error("Error processing data, will try to close gracefully: " + Arrays.toString(e.getStackTrace()));
                         engine.closeOutbound();
                         handshakeStatus = engine.getHandshakeStatus();
                         break;
@@ -209,7 +224,7 @@ public abstract class SSLPeer {
                             peerApplicationData = enlargeApplicationBuffer(engine, peerApplicationData);
                             break;
                         case BUFFER_UNDERFLOW:
-                            peerNetData = handleBufferUnderflow(engine, peerNetData);
+                            connection.setPeerNetData(handleBufferUnderflow(engine, connection.getPeerNetData()));
                             break;
                         case CLOSED:
                             if (engine.isOutboundDone()) {
@@ -224,35 +239,35 @@ public abstract class SSLPeer {
                     }
                     break;
                 case NEED_WRAP:
-                    netData.clear();
+                    connection.getNetData().clear();
                     try {
-                        result = engine.wrap(applicationData, netData);
+                        result = engine.wrap(applicationData, connection.getNetData());
                         handshakeStatus = result.getHandshakeStatus();
                     } catch (SSLException e) {
-                        log.error("Error processing data, will try to close gracefully...");
+                        log.error("Error processing data, will try to close gracefully: " + e + " localized: " + e.getLocalizedMessage() + " cause: " + e.getCause());
                         engine.closeOutbound();
                         handshakeStatus = engine.getHandshakeStatus();
                         break;
                     }
                     switch (result.getStatus()) {
                         case OK:
-                            netData.flip();
-                            while (netData.hasRemaining()) {
-                                socketChannel.write(netData);
+                            connection.getNetData().flip();
+                            while (connection.getNetData().hasRemaining()) {
+                                socketChannel.write(connection.getNetData());
                             }
                             break;
                         case BUFFER_OVERFLOW:
-                            netData = enlargePacketBuffer(engine, netData);
+                            connection.setNetData(enlargePacketBuffer(engine, connection.getNetData()));
                             break;
                         case CLOSED:
                             try {
-                                netData.flip();
-                                while (netData.hasRemaining()) {
-                                    socketChannel.write(netData);
+                                connection.getNetData().flip();
+                                while (connection.getNetData().hasRemaining()) {
+                                    socketChannel.write(connection.getNetData());
                                 }
-                                peerNetData.clear();
+                                connection.getPeerNetData().clear();
                             } catch (Exception e) {
-                                log.error("Failed to send CLOSE message due to socket channel's failure.");
+                                log.error("Failed to send CLOSE message due to socket channel's failure: " + Arrays.toString(e.getStackTrace()));
                                 handshakeStatus = engine.getHandshakeStatus();
                             }
                             break;
@@ -267,10 +282,14 @@ public abstract class SSLPeer {
                     }
                     handshakeStatus = engine.getHandshakeStatus();
                     break;
+                case FINISHED:
+                case NOT_HANDSHAKING:
+                    break;
                 default:
                     throw new IllegalStateException("Invalid SSL Status: " + handshakeStatus);
             }
         }
+        log.debug("Handshake Valid!");
         return true;
     }
 
@@ -301,19 +320,13 @@ public abstract class SSLPeer {
         return replaceBuffer;
     }
 
-    protected void closeConnection(SocketChannel socketChannel, SSLEngine engine) throws IOException {
-        engine.closeOutbound();
-        doHandshake(socketChannel, engine);
-        socketChannel.close();
-    }
-
-    protected void handleEndOfStream(SocketChannel socketChannel, SSLEngine engine) throws IOException {
+    protected void handleEndOfStream(SSLConnection connection) throws IOException {
         try {
-            engine.closeInbound();
+            connection.getEngine().closeInbound();
         } catch (Exception e) {
             log.error("This engine was forced to close due to end of stream without receiving the notification from peer");
         }
-        closeConnection(socketChannel, engine);
+        closeConnection(connection);
     }
 
     protected KeyManager[] createKeyManager(String filepath, String keystorePassword, String keyPassword) throws Exception {
@@ -336,11 +349,11 @@ public abstract class SSLPeer {
         return tmf.getTrustManagers();
     }
 
-    public void sendMessage(SSLConnection bootPeerConnection, Message message) {
+    public void sendMessage(SSLConnection connection, Message message) {
         try {
-            this.write(bootPeerConnection.getSocketChannel(), bootPeerConnection.getEngine(), message.encode());
+            this.write(connection, message.encode());
         } catch (IOException e) {
-            log.debug("Could not write message: " + e.getMessage());
+            log.debug("Could not write message: " + e.getMessage() + " localized: " + e.getLocalizedMessage() + " cause: " + e.getCause());
         }
     }
 }

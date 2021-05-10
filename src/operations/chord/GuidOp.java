@@ -6,6 +6,7 @@ import messages.chord.Lookup;
 import messages.chord.LookupReply;
 import peer.Peer;
 import peer.chord.ChordReference;
+import peer.ssl.SSLConnection;
 
 import javax.net.ssl.SSLEngine;
 import java.io.IOException;
@@ -13,8 +14,8 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 
 public class GuidOp extends ChordOperation {
-    public GuidOp(SocketChannel channel, SSLEngine engine, Guid message, Peer context) {
-        super(channel, engine, message, context);
+    public GuidOp(SSLConnection connection, Guid message, Peer context) {
+        super(connection, message, context);
     }
 
     @Override
@@ -30,11 +31,12 @@ public class GuidOp extends ChordOperation {
 
         Message message = new Lookup(context.getReference(), String.valueOf(context.getGuid()).getBytes(StandardCharsets.UTF_8));
         try {
-            context.write(this.channel, this.engine, message.encode());
-            LookupReply reply = (LookupReply) context.readWithReply(this.channel, this.engine);
+            context.write(this.connection, message.encode());
+            LookupReply reply = (LookupReply) context.readWithReply(this.connection);
             ChordReference successor = reply.getReference();
             log.debug("Got successor: " + successor);
             context.setSuccessor(successor);
+            context.closeConnection(connection);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {

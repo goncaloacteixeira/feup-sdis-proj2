@@ -1,17 +1,62 @@
 package peer.ssl;
 
 import javax.net.ssl.SSLEngine;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 public class SSLConnection {
     private final SocketChannel socketChannel;
     private final SSLEngine engine;
-    private final boolean handshake;
+    private boolean handshake;
+    private ByteBuffer appData;
+    private ByteBuffer netData;
+    private ByteBuffer peerData;
+    private ByteBuffer peerNetData;
 
-    public SSLConnection(SocketChannel socketChannel, SSLEngine engine, boolean handshake) {
+    public SSLConnection(SocketChannel socketChannel, SSLEngine engine, boolean handshake, ByteBuffer appData, ByteBuffer netData, ByteBuffer peerData, ByteBuffer peerNetData) {
         this.socketChannel = socketChannel;
         this.engine = engine;
         this.handshake = handshake;
+        this.appData = appData;
+        this.netData = netData;
+        this.peerData = peerData;
+        this.peerNetData = peerNetData;
+    }
+
+    public void setHandshake(boolean handshake) {
+        this.handshake = handshake;
+    }
+
+    public void setAppData(ByteBuffer appData) {
+        this.appData = appData;
+    }
+
+    public void setNetData(ByteBuffer netData) {
+        this.netData = netData;
+    }
+
+    public void setPeerData(ByteBuffer peerData) {
+        this.peerData = peerData;
+    }
+
+    public void setPeerNetData(ByteBuffer peerNetData) {
+        this.peerNetData = peerNetData;
+    }
+
+    public ByteBuffer getAppData() {
+        return appData;
+    }
+
+    public ByteBuffer getNetData() {
+        return netData;
+    }
+
+    public ByteBuffer getPeerData() {
+        return peerData;
+    }
+
+    public ByteBuffer getPeerNetData() {
+        return peerNetData;
     }
 
     public SocketChannel getSocketChannel() {

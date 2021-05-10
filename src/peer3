@@ -1,0 +1,1292 @@
+javax.net.ssl|DEBUG|01|main|2021-05-10 12:59:14.455 BST|SSLCipher.java:438|jdk.tls.keyLimits:  entry = AES/GCM/NoPadding KeyUpdate 2^37. AES/GCM/NOPADDING:KEYUPDATE = 137438953472
+[DEBUG] 2021-05-10 12:59:14.937 [Thread-0] ChordPeer - Trying to join the CHORD circle on: -1(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:14.965 [Thread-0] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|13|pool-2-thread-1|2021-05-10 12:59:14.982 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|13|pool-2-thread-1|2021-05-10 12:59:14.982 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|13|pool-2-thread-1|2021-05-10 12:59:14.982 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:15.029 [Thread-0] SSLPeer - Connected to Peer on: localhost/127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:15.031 [Thread-0] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:15.040 [Thread-0] Peer - Message Sent: Message{type='CHORD', operation='JOIN', sender=-1(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 12:59:15.040 [Thread-0] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 12:59:15.047 [Thread-0] Peer - Message received: Guid{type='CHORD', operation='GUID', sender=29(127.0.0.1:8001), guid=212}
+[DEBUG] 2021-05-10 12:59:15.050 [pool-4-thread-1] GuidOp - Started GUID operation...
+[DEBUG] 2021-05-10 12:59:15.052 [pool-4-thread-1] GuidOp - New GUID:212
+[DEBUG] 2021-05-10 12:59:15.052 [pool-4-thread-1] GuidOp - Getting successor from peer: 29
+[DEBUG] 2021-05-10 12:59:15.052 [Thread-0] SSLPeer - [PEER] Online and waiting connections on: /192.168.1.235:56503
+[DEBUG] 2021-05-10 12:59:15.052 [pool-4-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:15.053 [pool-4-thread-1] Peer - Message Sent: Lookup{type='CHORD', operation='LOOKUP', sender=212(192.168.1.235:56503), target=212}
+[DEBUG] 2021-05-10 12:59:15.053 [pool-4-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 12:59:15.075 [pool-4-thread-1] Peer - Message received: LookupReply{type='CHORD', operation='LOOKUPREPLY', sender=29(127.0.0.1:8001), reference=29(127.0.0.1:8001)}
+[DEBUG] 2021-05-10 12:59:15.076 [pool-4-thread-1] GuidOp - Got successor: 29(127.0.0.1:8001)
+javax.net.ssl|ALL|14|pool-4-thread-1|2021-05-10 12:59:15.076 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:15.077 [pool-4-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:20.058 [pool-3-thread-1] ChordPeer - Fixing finger:1
+[DEBUG] 2021-05-10 12:59:20.059 [pool-3-thread-1] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:22.060 [pool-3-thread-1] ChordPeer - Fixing finger:2
+[DEBUG] 2021-05-10 12:59:22.060 [pool-3-thread-1] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:24.054 [pool-3-thread-1] ChordPeer - Fixing finger:3
+[DEBUG] 2021-05-10 12:59:24.054 [pool-3-thread-1] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:25.052 [pool-3-thread-2] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 12:59:25.052 [pool-3-thread-2] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 12:59:25.055 [pool-3-thread-2] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|17|pool-2-thread-2|2021-05-10 12:59:25.060 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|17|pool-2-thread-2|2021-05-10 12:59:25.060 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|17|pool-2-thread-2|2021-05-10 12:59:25.060 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:25.072 [pool-3-thread-2] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:25.072 [pool-3-thread-2] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:25.073 [pool-3-thread-2] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 12:59:25.073 [pool-3-thread-2] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 12:59:25.074 [pool-3-thread-2] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|16|pool-3-thread-2|2021-05-10 12:59:25.074 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:25.074 [pool-3-thread-2] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:25.074 [pool-3-thread-2] ChordPeer - Predecessor found: 174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 12:59:25.074 [pool-3-thread-2] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 12:59:25.082 [pool-3-thread-2] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|18|pool-2-thread-3|2021-05-10 12:59:25.087 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|18|pool-2-thread-3|2021-05-10 12:59:25.087 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|18|pool-2-thread-3|2021-05-10 12:59:25.087 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:25.098 [pool-3-thread-2] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:25.099 [pool-3-thread-2] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:25.100 [pool-3-thread-2] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|16|pool-3-thread-2|2021-05-10 12:59:25.100 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:25.101 [pool-3-thread-2] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:26.056 [pool-3-thread-1] ChordPeer - Fixing finger:4
+[DEBUG] 2021-05-10 12:59:26.056 [pool-3-thread-1] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:28.056 [pool-3-thread-1] ChordPeer - Fixing finger:5
+[DEBUG] 2021-05-10 12:59:28.056 [pool-3-thread-1] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:28.097 [Thread-0] SSLPeer - [PEER] Received new connection request
+[DEBUG] 2021-05-10 12:59:28.099 [Thread-0] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|19|pool-2-thread-4|2021-05-10 12:59:28.101 BST|X509Authentication.java:301|No X.509 cert selected for EC
+javax.net.ssl|ALL|19|pool-2-thread-4|2021-05-10 12:59:28.101 BST|X509Authentication.java:301|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:28.113 [Thread-0] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 12:59:28.114 [Thread-0] Peer - Message received: Notification{type='CHORD', operation='NOTIFICATION', sender=174(192.168.1.235:56411), reference=174(192.168.1.235:56411)}
+[DEBUG] 2021-05-10 12:59:28.114 [Thread-0] Peer - [PEER] Reading data...
+[ERROR] 2021-05-10 12:59:28.114 [Thread-0] Peer - Received EOS. Trying to close connection...
+javax.net.ssl|ALL|11|Thread-0|2021-05-10 12:59:28.114 BST|SSLEngineImpl.java:724|Closing inbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:28.115 [pool-4-thread-2] NotificationOp - Updated predecessor: 174(192.168.1.235:56411)
+javax.net.ssl|ERROR|11|Thread-0|2021-05-10 12:59:28.115 BST|TransportContext.java:344|Fatal (INTERNAL_ERROR): closing inbound before receiving peer's close_notify (
+"throwable" : {
+  javax.net.ssl.SSLException: closing inbound before receiving peer's close_notify
+  	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:133)
+  	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:117)
+  	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:339)
+  	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:295)
+  	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:286)
+  	at java.base/sun.security.ssl.SSLEngineImpl.closeInbound(SSLEngineImpl.java:733)
+  	at peer.ssl.SSLPeer.handleEndOfStream(SSLPeer.java:316)
+  	at peer.Peer.readWithReply(Peer.java:108)
+  	at peer.Peer.read(Peer.java:58)
+  	at peer.ssl.SSLPeer._start(SSLPeer.java:152)
+  	at peer.ssl.SSLPeer.start(SSLPeer.java:130)
+  	at peer.Peer.start(Peer.java:48)
+  	at java.base/java.lang.Thread.run(Thread.java:834)}
+
+)
+[ERROR] 2021-05-10 12:59:28.115 [Thread-0] SSLPeer - This engine was forced to close due to end of stream without receiving the notification from peer
+[DEBUG] 2021-05-10 12:59:28.116 [Thread-0] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:28.116 [Thread-0] Peer - Connection closed!
+[DEBUG] 2021-05-10 12:59:30.066 [pool-3-thread-1] ChordPeer - Fixing finger:6
+[DEBUG] 2021-05-10 12:59:30.066 [pool-3-thread-1] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:31.066 [pool-3-thread-2] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 12:59:31.066 [pool-3-thread-2] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 12:59:31.070 [pool-3-thread-2] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1C|pool-2-thread-6|2021-05-10 12:59:31.074 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1C|pool-2-thread-6|2021-05-10 12:59:31.074 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1C|pool-2-thread-6|2021-05-10 12:59:31.075 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:31.081 [pool-3-thread-2] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:31.081 [pool-3-thread-2] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:31.082 [pool-3-thread-2] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 12:59:31.082 [pool-3-thread-2] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 12:59:31.083 [pool-3-thread-2] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|16|pool-3-thread-2|2021-05-10 12:59:31.083 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:31.083 [pool-3-thread-2] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:31.083 [pool-3-thread-2] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 12:59:31.083 [pool-3-thread-2] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 12:59:31.086 [pool-3-thread-2] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1D|pool-2-thread-7|2021-05-10 12:59:31.091 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1D|pool-2-thread-7|2021-05-10 12:59:31.091 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1D|pool-2-thread-7|2021-05-10 12:59:31.091 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:31.096 [pool-3-thread-2] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:31.096 [pool-3-thread-2] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:31.096 [pool-3-thread-2] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|16|pool-3-thread-2|2021-05-10 12:59:31.097 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:31.097 [pool-3-thread-2] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:32.056 [pool-3-thread-1] ChordPeer - Fixing finger:7
+[DEBUG] 2021-05-10 12:59:32.056 [pool-3-thread-1] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:34.059 [pool-3-thread-1] ChordPeer - Fixing finger:8
+[DEBUG] 2021-05-10 12:59:34.061 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1E|pool-2-thread-8|2021-05-10 12:59:34.065 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1E|pool-2-thread-8|2021-05-10 12:59:34.065 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1E|pool-2-thread-8|2021-05-10 12:59:34.065 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:34.070 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:34.070 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:34.070 [pool-3-thread-1] Peer - Message Sent: Lookup{type='CHORD', operation='LOOKUP', sender=212(192.168.1.235:56503), target=84}
+[DEBUG] 2021-05-10 12:59:34.070 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 12:59:34.090 [Thread-0] SSLPeer - [PEER] Received new connection request
+[DEBUG] 2021-05-10 12:59:34.092 [Thread-0] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1F|pool-2-thread-9|2021-05-10 12:59:34.094 BST|X509Authentication.java:301|No X.509 cert selected for EC
+javax.net.ssl|ALL|1F|pool-2-thread-9|2021-05-10 12:59:34.094 BST|X509Authentication.java:301|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:34.105 [Thread-0] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 12:59:34.105 [Thread-0] Peer - Message received: Message{type='CHORD', operation='PREDECESSOR', sender=174(192.168.1.235:56411)}
+[DEBUG] 2021-05-10 12:59:34.106 [pool-4-thread-3] PredecessorOp - Sending back predecessor...
+[DEBUG] 2021-05-10 12:59:34.107 [pool-4-thread-3] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:34.108 [pool-4-thread-3] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSORREPLY', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 12:59:34.108 [Thread-0] Peer - [PEER] Reading data...
+[ERROR] 2021-05-10 12:59:34.109 [Thread-0] Peer - Received EOS. Trying to close connection...
+javax.net.ssl|ALL|11|Thread-0|2021-05-10 12:59:34.109 BST|SSLEngineImpl.java:724|Closing inbound of SSLEngine
+javax.net.ssl|ERROR|11|Thread-0|2021-05-10 12:59:34.109 BST|TransportContext.java:344|Fatal (INTERNAL_ERROR): closing inbound before receiving peer's close_notify (
+"throwable" : {
+  javax.net.ssl.SSLException: closing inbound before receiving peer's close_notify
+  	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:133)
+  	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:117)
+  	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:339)
+  	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:295)
+  	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:286)
+  	at java.base/sun.security.ssl.SSLEngineImpl.closeInbound(SSLEngineImpl.java:733)
+  	at peer.ssl.SSLPeer.handleEndOfStream(SSLPeer.java:316)
+  	at peer.Peer.readWithReply(Peer.java:108)
+  	at peer.Peer.read(Peer.java:58)
+  	at peer.ssl.SSLPeer._start(SSLPeer.java:152)
+  	at peer.ssl.SSLPeer.start(SSLPeer.java:130)
+  	at peer.Peer.start(Peer.java:48)
+  	at java.base/java.lang.Thread.run(Thread.java:834)}
+
+)
+[ERROR] 2021-05-10 12:59:34.109 [Thread-0] SSLPeer - This engine was forced to close due to end of stream without receiving the notification from peer
+[DEBUG] 2021-05-10 12:59:34.109 [Thread-0] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:34.109 [Thread-0] Peer - Connection closed!
+[DEBUG] 2021-05-10 12:59:34.110 [Thread-0] SSLPeer - [PEER] Received new connection request
+[DEBUG] 2021-05-10 12:59:34.112 [Thread-0] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|22|pool-2-thread-11|2021-05-10 12:59:34.114 BST|X509Authentication.java:301|No X.509 cert selected for EC
+javax.net.ssl|ALL|22|pool-2-thread-11|2021-05-10 12:59:34.114 BST|X509Authentication.java:301|No X.509 cert selected for EC
+[ERROR] 2021-05-10 12:59:34.125 [Thread-0] SSLPeer - Error on start: java.io.IOException: Uma ligação estabelecida foi anulada pelo software no computador anfitrião
+java.io.IOException: Uma ligação estabelecida foi anulada pelo software no computador anfitrião
+	at java.base/sun.nio.ch.SocketDispatcher.write0(Native Method)
+	at java.base/sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:51)
+	at java.base/sun.nio.ch.IOUtil.writeFromNativeBuffer(IOUtil.java:113)
+	at java.base/sun.nio.ch.IOUtil.write(IOUtil.java:79)
+	at java.base/sun.nio.ch.IOUtil.write(IOUtil.java:50)
+	at java.base/sun.nio.ch.SocketChannelImpl.write(SocketChannelImpl.java:466)
+	at peer.ssl.SSLPeer.doHandshake(SSLPeer.java:242)
+	at peer.ssl.SSLPeer.accept(SSLPeer.java:120)
+	at peer.ssl.SSLPeer._start(SSLPeer.java:150)
+	at peer.ssl.SSLPeer.start(SSLPeer.java:130)
+	at peer.Peer.start(Peer.java:48)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+javax.net.ssl|ERROR|15|pool-3-thread-1|2021-05-10 12:59:34.132 BST|TransportContext.java:344|Fatal (BAD_RECORD_MAC): Tag mismatch! (
+"throwable" : {
+  javax.crypto.AEADBadTagException: Tag mismatch!
+  	at java.base/com.sun.crypto.provider.GaloisCounterMode.decryptFinal(GaloisCounterMode.java:623)
+  	at java.base/com.sun.crypto.provider.CipherCore.finalNoPadding(CipherCore.java:1116)
+  	at java.base/com.sun.crypto.provider.CipherCore.fillOutputBuffer(CipherCore.java:1053)
+  	at java.base/com.sun.crypto.provider.CipherCore.doFinal(CipherCore.java:941)
+  	at java.base/com.sun.crypto.provider.AESCipher.engineDoFinal(AESCipher.java:491)
+  	at java.base/javax.crypto.CipherSpi.bufferCrypt(CipherSpi.java:779)
+  	at java.base/javax.crypto.CipherSpi.engineDoFinal(CipherSpi.java:730)
+  	at java.base/javax.crypto.Cipher.doFinal(Cipher.java:2497)
+  	at java.base/sun.security.ssl.SSLCipher$T12GcmReadCipherGenerator$GcmReadCipher.decrypt(SSLCipher.java:1629)
+  	at java.base/sun.security.ssl.SSLEngineInputRecord.decodeInputRecord(SSLEngineInputRecord.java:240)
+  	at java.base/sun.security.ssl.SSLEngineInputRecord.decode(SSLEngineInputRecord.java:197)
+  	at java.base/sun.security.ssl.SSLEngineInputRecord.decode(SSLEngineInputRecord.java:160)
+  	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:110)
+  	at java.base/sun.security.ssl.SSLEngineImpl.decode(SSLEngineImpl.java:681)
+  	at java.base/sun.security.ssl.SSLEngineImpl.readRecord(SSLEngineImpl.java:636)
+  	at java.base/sun.security.ssl.SSLEngineImpl.unwrap(SSLEngineImpl.java:454)
+  	at java.base/sun.security.ssl.SSLEngineImpl.unwrap(SSLEngineImpl.java:433)
+  	at java.base/javax.net.ssl.SSLEngine.unwrap(SSLEngine.java:637)
+  	at peer.Peer.readWithReply(Peer.java:73)
+  	at peer.chord.ChordPeer.findSuccessor(ChordPeer.java:158)
+  	at peer.chord.ChordPeer.fixFingers(ChordPeer.java:236)
+  	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
+  	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:305)
+  	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+  	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+  	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+  	at java.base/java.lang.Thread.run(Thread.java:834)}
+
+)
+[DEBUG] 2021-05-10 12:59:34.133 [pool-3-thread-1] ChordPeer - Could not connect to peer.
+[DEBUG] 2021-05-10 12:59:34.133 [pool-3-thread-1] ChordPeer - Something went wrong, successor came null!
+[DEBUG] 2021-05-10 12:59:34.133 [pool-3-thread-1] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:36.054 [pool-3-thread-2] ChordPeer - Fixing finger:1
+[DEBUG] 2021-05-10 12:59:36.054 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:37.064 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 12:59:37.064 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 12:59:37.066 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|24|pool-2-thread-13|2021-05-10 12:59:37.070 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|24|pool-2-thread-13|2021-05-10 12:59:37.070 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|24|pool-2-thread-13|2021-05-10 12:59:37.070 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:37.074 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:37.074 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:37.075 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 12:59:37.075 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 12:59:37.076 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 12:59:37.076 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:37.076 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:37.076 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 12:59:37.076 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 12:59:37.079 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|25|pool-2-thread-14|2021-05-10 12:59:37.083 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|25|pool-2-thread-14|2021-05-10 12:59:37.083 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|25|pool-2-thread-14|2021-05-10 12:59:37.084 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:37.088 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:37.088 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:37.089 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 12:59:37.089 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:37.089 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:38.061 [pool-3-thread-2] ChordPeer - Fixing finger:2
+[DEBUG] 2021-05-10 12:59:38.061 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:40.066 [pool-3-thread-2] ChordPeer - Fixing finger:3
+[DEBUG] 2021-05-10 12:59:40.066 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:42.053 [pool-3-thread-2] ChordPeer - Fixing finger:4
+[DEBUG] 2021-05-10 12:59:42.054 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:43.066 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 12:59:43.066 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 12:59:43.068 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|26|pool-2-thread-15|2021-05-10 12:59:43.072 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|26|pool-2-thread-15|2021-05-10 12:59:43.072 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|26|pool-2-thread-15|2021-05-10 12:59:43.072 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:43.077 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:43.077 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:43.078 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 12:59:43.078 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 12:59:43.079 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 12:59:43.079 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:43.079 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:43.079 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 12:59:43.079 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 12:59:43.081 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|27|pool-2-thread-16|2021-05-10 12:59:43.086 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|27|pool-2-thread-16|2021-05-10 12:59:43.086 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|27|pool-2-thread-16|2021-05-10 12:59:43.086 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:43.093 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:43.093 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:43.094 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 12:59:43.094 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:43.094 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:44.054 [pool-3-thread-2] ChordPeer - Fixing finger:5
+[DEBUG] 2021-05-10 12:59:44.054 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:46.054 [pool-3-thread-2] ChordPeer - Fixing finger:6
+[DEBUG] 2021-05-10 12:59:46.054 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:48.063 [pool-3-thread-2] ChordPeer - Fixing finger:7
+[DEBUG] 2021-05-10 12:59:48.063 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+[DEBUG] 2021-05-10 12:59:49.063 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 12:59:49.063 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 12:59:49.065 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|13|pool-2-thread-1|2021-05-10 12:59:49.068 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|13|pool-2-thread-1|2021-05-10 12:59:49.068 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|13|pool-2-thread-1|2021-05-10 12:59:49.069 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:49.073 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:49.073 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:49.073 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 12:59:49.073 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 12:59:49.074 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 12:59:49.074 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:49.074 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:49.074 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 12:59:49.074 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 12:59:49.077 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|17|pool-2-thread-2|2021-05-10 12:59:49.080 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|17|pool-2-thread-2|2021-05-10 12:59:49.080 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|17|pool-2-thread-2|2021-05-10 12:59:49.080 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:49.085 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:49.085 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:49.085 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 12:59:49.086 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:49.086 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:50.056 [pool-3-thread-2] ChordPeer - Fixing finger:8
+[DEBUG] 2021-05-10 12:59:50.058 [pool-3-thread-2] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|18|pool-2-thread-3|2021-05-10 12:59:50.061 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|18|pool-2-thread-3|2021-05-10 12:59:50.061 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|18|pool-2-thread-3|2021-05-10 12:59:50.062 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:50.067 [pool-3-thread-2] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:50.067 [pool-3-thread-2] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:50.067 [pool-3-thread-2] Peer - Message Sent: Lookup{type='CHORD', operation='LOOKUP', sender=212(192.168.1.235:56503), target=84}
+[DEBUG] 2021-05-10 12:59:50.067 [pool-3-thread-2] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 12:59:50.126 [pool-3-thread-2] Peer - Message received: LookupReply{type='CHORD', operation='LOOKUPREPLY', sender=29(127.0.0.1:8001), reference=174(192.168.1.235:56411)}
+javax.net.ssl|ALL|16|pool-3-thread-2|2021-05-10 12:59:50.127 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:50.127 [pool-3-thread-2] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:50.131 [pool-3-thread-2] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|19|pool-2-thread-4|2021-05-10 12:59:50.135 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|19|pool-2-thread-4|2021-05-10 12:59:50.136 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|19|pool-2-thread-4|2021-05-10 12:59:50.136 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:50.141 [pool-3-thread-2] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:50.141 [pool-3-thread-2] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:50.142 [pool-3-thread-2] Peer - Message Sent: Lookup{type='CHORD', operation='LOOKUP', sender=212(192.168.1.235:56503), target=84}
+[DEBUG] 2021-05-10 12:59:50.142 [pool-3-thread-2] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 12:59:50.196 [pool-3-thread-2] Peer - Message received: LookupReply{type='CHORD', operation='LOOKUPREPLY', sender=29(127.0.0.1:8001), reference=174(192.168.1.235:56411)}
+javax.net.ssl|ALL|16|pool-3-thread-2|2021-05-10 12:59:50.196 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:50.196 [pool-3-thread-2] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:50.196 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 12:59:52.056 [pool-3-thread-2] ChordPeer - Fixing finger:1
+[DEBUG] 2021-05-10 12:59:52.056 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 12:59:54.057 [pool-3-thread-2] ChordPeer - Fixing finger:2
+[DEBUG] 2021-05-10 12:59:54.057 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 12:59:55.059 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 12:59:55.059 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 12:59:55.061 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1A|pool-2-thread-5|2021-05-10 12:59:55.065 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1A|pool-2-thread-5|2021-05-10 12:59:55.065 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1A|pool-2-thread-5|2021-05-10 12:59:55.065 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:55.068 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:55.068 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:55.069 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 12:59:55.069 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 12:59:55.069 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 12:59:55.069 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:55.069 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:55.069 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 12:59:55.070 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 12:59:55.072 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1C|pool-2-thread-6|2021-05-10 12:59:55.076 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1C|pool-2-thread-6|2021-05-10 12:59:55.076 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1C|pool-2-thread-6|2021-05-10 12:59:55.076 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 12:59:55.080 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 12:59:55.080 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 12:59:55.081 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 12:59:55.081 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 12:59:55.081 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 12:59:56.060 [pool-3-thread-2] ChordPeer - Fixing finger:3
+[DEBUG] 2021-05-10 12:59:56.060 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 12:59:58.057 [pool-3-thread-2] ChordPeer - Fixing finger:4
+[DEBUG] 2021-05-10 12:59:58.057 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:00.060 [pool-3-thread-2] ChordPeer - Fixing finger:5
+[DEBUG] 2021-05-10 13:00:00.060 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:01.061 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:00:01.061 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:00:01.063 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1D|pool-2-thread-7|2021-05-10 13:00:01.067 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1D|pool-2-thread-7|2021-05-10 13:00:01.067 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1D|pool-2-thread-7|2021-05-10 13:00:01.067 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:01.070 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:01.071 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:01.071 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 13:00:01.071 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:01.071 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:01.072 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:01.072 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:01.072 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 13:00:01.072 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 13:00:01.074 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1E|pool-2-thread-8|2021-05-10 13:00:01.078 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1E|pool-2-thread-8|2021-05-10 13:00:01.078 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1E|pool-2-thread-8|2021-05-10 13:00:01.078 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:01.082 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:01.082 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:01.082 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:01.083 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:01.083 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:02.053 [pool-3-thread-2] ChordPeer - Fixing finger:6
+[DEBUG] 2021-05-10 13:00:02.053 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:04.059 [pool-3-thread-2] ChordPeer - Fixing finger:7
+[DEBUG] 2021-05-10 13:00:04.059 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:06.058 [pool-3-thread-2] ChordPeer - Fixing finger:8
+[DEBUG] 2021-05-10 13:00:06.060 [pool-3-thread-2] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1F|pool-2-thread-9|2021-05-10 13:00:06.064 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1F|pool-2-thread-9|2021-05-10 13:00:06.064 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1F|pool-2-thread-9|2021-05-10 13:00:06.064 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:06.068 [pool-3-thread-2] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:06.068 [pool-3-thread-2] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:06.068 [pool-3-thread-2] Peer - Message Sent: Lookup{type='CHORD', operation='LOOKUP', sender=212(192.168.1.235:56503), target=84}
+[DEBUG] 2021-05-10 13:00:06.068 [pool-3-thread-2] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:06.119 [pool-3-thread-2] Peer - Message received: LookupReply{type='CHORD', operation='LOOKUPREPLY', sender=29(127.0.0.1:8001), reference=174(192.168.1.235:56411)}
+javax.net.ssl|ALL|16|pool-3-thread-2|2021-05-10 13:00:06.120 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:06.120 [pool-3-thread-2] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:06.124 [pool-3-thread-2] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|20|pool-2-thread-10|2021-05-10 13:00:06.127 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|20|pool-2-thread-10|2021-05-10 13:00:06.127 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|20|pool-2-thread-10|2021-05-10 13:00:06.127 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:06.131 [pool-3-thread-2] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:06.131 [pool-3-thread-2] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:06.131 [pool-3-thread-2] Peer - Message Sent: Lookup{type='CHORD', operation='LOOKUP', sender=212(192.168.1.235:56503), target=84}
+[DEBUG] 2021-05-10 13:00:06.131 [pool-3-thread-2] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:06.181 [pool-3-thread-2] Peer - Message received: LookupReply{type='CHORD', operation='LOOKUPREPLY', sender=29(127.0.0.1:8001), reference=174(192.168.1.235:56411)}
+javax.net.ssl|ALL|16|pool-3-thread-2|2021-05-10 13:00:06.181 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:06.181 [pool-3-thread-2] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:06.181 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:07.056 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:00:07.056 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:00:07.058 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|22|pool-2-thread-11|2021-05-10 13:00:07.061 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|22|pool-2-thread-11|2021-05-10 13:00:07.062 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|22|pool-2-thread-11|2021-05-10 13:00:07.062 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:07.065 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:07.065 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:07.065 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 13:00:07.065 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:07.066 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:07.066 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:07.066 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:07.066 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 13:00:07.066 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 13:00:07.069 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|23|pool-2-thread-12|2021-05-10 13:00:07.072 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|23|pool-2-thread-12|2021-05-10 13:00:07.072 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|23|pool-2-thread-12|2021-05-10 13:00:07.072 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:07.076 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:07.076 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:07.076 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:07.076 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:07.077 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:08.054 [pool-3-thread-2] ChordPeer - Fixing finger:1
+[DEBUG] 2021-05-10 13:00:08.054 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:10.053 [pool-3-thread-2] ChordPeer - Fixing finger:2
+[DEBUG] 2021-05-10 13:00:10.053 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:12.052 [pool-3-thread-2] ChordPeer - Fixing finger:3
+[DEBUG] 2021-05-10 13:00:12.052 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:13.066 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:00:13.066 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:00:13.072 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|24|pool-2-thread-13|2021-05-10 13:00:13.076 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|24|pool-2-thread-13|2021-05-10 13:00:13.076 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|24|pool-2-thread-13|2021-05-10 13:00:13.076 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:13.079 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:13.080 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:13.080 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 13:00:13.080 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:13.081 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:13.081 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:13.081 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:13.081 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 13:00:13.081 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 13:00:13.085 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|25|pool-2-thread-14|2021-05-10 13:00:13.088 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|25|pool-2-thread-14|2021-05-10 13:00:13.088 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|25|pool-2-thread-14|2021-05-10 13:00:13.088 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:13.092 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:13.092 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:13.092 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:13.092 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:13.093 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:14.061 [pool-3-thread-2] ChordPeer - Fixing finger:4
+[DEBUG] 2021-05-10 13:00:14.061 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:16.053 [pool-3-thread-2] ChordPeer - Fixing finger:5
+[DEBUG] 2021-05-10 13:00:16.053 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:18.053 [pool-3-thread-2] ChordPeer - Fixing finger:6
+[DEBUG] 2021-05-10 13:00:18.053 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:19.063 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:00:19.063 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:00:19.065 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|26|pool-2-thread-15|2021-05-10 13:00:19.068 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|26|pool-2-thread-15|2021-05-10 13:00:19.068 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|26|pool-2-thread-15|2021-05-10 13:00:19.068 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:19.071 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:19.071 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:19.072 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 13:00:19.072 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:19.072 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:19.073 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:19.073 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:19.073 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 13:00:19.073 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 13:00:19.075 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|27|pool-2-thread-16|2021-05-10 13:00:19.078 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|27|pool-2-thread-16|2021-05-10 13:00:19.079 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|27|pool-2-thread-16|2021-05-10 13:00:19.079 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:19.084 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:19.084 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:19.084 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:19.084 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:19.084 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:20.055 [pool-3-thread-2] ChordPeer - Fixing finger:7
+[DEBUG] 2021-05-10 13:00:20.055 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:22.058 [pool-3-thread-2] ChordPeer - Fixing finger:8
+[DEBUG] 2021-05-10 13:00:22.060 [pool-3-thread-2] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|13|pool-2-thread-1|2021-05-10 13:00:22.063 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|13|pool-2-thread-1|2021-05-10 13:00:22.063 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|13|pool-2-thread-1|2021-05-10 13:00:22.063 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:22.067 [pool-3-thread-2] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:22.067 [pool-3-thread-2] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:22.067 [pool-3-thread-2] Peer - Message Sent: Lookup{type='CHORD', operation='LOOKUP', sender=212(192.168.1.235:56503), target=84}
+[DEBUG] 2021-05-10 13:00:22.067 [pool-3-thread-2] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:22.129 [pool-3-thread-2] Peer - Message received: LookupReply{type='CHORD', operation='LOOKUPREPLY', sender=29(127.0.0.1:8001), reference=174(192.168.1.235:56411)}
+javax.net.ssl|ALL|16|pool-3-thread-2|2021-05-10 13:00:22.129 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:22.129 [pool-3-thread-2] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:22.132 [pool-3-thread-2] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|17|pool-2-thread-2|2021-05-10 13:00:22.135 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|17|pool-2-thread-2|2021-05-10 13:00:22.136 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|17|pool-2-thread-2|2021-05-10 13:00:22.136 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:22.140 [pool-3-thread-2] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:22.141 [pool-3-thread-2] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:22.141 [pool-3-thread-2] Peer - Message Sent: Lookup{type='CHORD', operation='LOOKUP', sender=212(192.168.1.235:56503), target=84}
+[DEBUG] 2021-05-10 13:00:22.141 [pool-3-thread-2] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:22.187 [pool-3-thread-2] Peer - Message received: LookupReply{type='CHORD', operation='LOOKUPREPLY', sender=29(127.0.0.1:8001), reference=174(192.168.1.235:56411)}
+javax.net.ssl|ALL|16|pool-3-thread-2|2021-05-10 13:00:22.187 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:22.188 [pool-3-thread-2] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:22.188 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:24.060 [pool-3-thread-2] ChordPeer - Fixing finger:1
+[DEBUG] 2021-05-10 13:00:24.060 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:25.066 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:00:25.066 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:00:25.069 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|18|pool-2-thread-3|2021-05-10 13:00:25.072 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|18|pool-2-thread-3|2021-05-10 13:00:25.072 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|18|pool-2-thread-3|2021-05-10 13:00:25.073 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:25.077 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:25.078 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:25.078 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 13:00:25.078 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:25.079 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:25.079 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:25.079 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:25.079 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 13:00:25.079 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 13:00:25.083 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|19|pool-2-thread-4|2021-05-10 13:00:25.086 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|19|pool-2-thread-4|2021-05-10 13:00:25.087 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|19|pool-2-thread-4|2021-05-10 13:00:25.087 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:25.090 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:25.090 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:25.090 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:25.090 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:25.091 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:26.057 [pool-3-thread-2] ChordPeer - Fixing finger:2
+[DEBUG] 2021-05-10 13:00:26.057 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:28.058 [pool-3-thread-2] ChordPeer - Fixing finger:3
+[DEBUG] 2021-05-10 13:00:28.058 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:30.058 [pool-3-thread-2] ChordPeer - Fixing finger:4
+[DEBUG] 2021-05-10 13:00:30.058 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:31.056 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:00:31.056 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:00:31.058 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1A|pool-2-thread-5|2021-05-10 13:00:31.061 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1A|pool-2-thread-5|2021-05-10 13:00:31.061 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1A|pool-2-thread-5|2021-05-10 13:00:31.061 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:31.064 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:31.064 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:31.064 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 13:00:31.065 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:31.065 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:31.065 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:31.065 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:31.065 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 13:00:31.065 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 13:00:31.067 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1C|pool-2-thread-6|2021-05-10 13:00:31.070 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1C|pool-2-thread-6|2021-05-10 13:00:31.070 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1C|pool-2-thread-6|2021-05-10 13:00:31.071 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:31.075 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:31.075 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:31.075 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:31.075 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:31.075 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:32.066 [pool-3-thread-2] ChordPeer - Fixing finger:5
+[DEBUG] 2021-05-10 13:00:32.066 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:34.057 [pool-3-thread-2] ChordPeer - Fixing finger:6
+[DEBUG] 2021-05-10 13:00:34.057 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:36.062 [pool-3-thread-2] ChordPeer - Fixing finger:7
+[DEBUG] 2021-05-10 13:00:36.062 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:37.062 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:00:37.062 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:00:37.064 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1D|pool-2-thread-7|2021-05-10 13:00:37.067 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1D|pool-2-thread-7|2021-05-10 13:00:37.067 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1D|pool-2-thread-7|2021-05-10 13:00:37.067 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:37.070 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:37.070 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:37.070 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 13:00:37.070 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:37.070 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:37.071 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:37.071 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:37.071 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 13:00:37.071 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 13:00:37.073 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1E|pool-2-thread-8|2021-05-10 13:00:37.077 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1E|pool-2-thread-8|2021-05-10 13:00:37.077 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1E|pool-2-thread-8|2021-05-10 13:00:37.077 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:37.081 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:37.081 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:37.082 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:37.082 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:37.082 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:38.060 [pool-3-thread-2] ChordPeer - Fixing finger:8
+[DEBUG] 2021-05-10 13:00:38.063 [pool-3-thread-2] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1F|pool-2-thread-9|2021-05-10 13:00:38.065 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1F|pool-2-thread-9|2021-05-10 13:00:38.066 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1F|pool-2-thread-9|2021-05-10 13:00:38.066 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:38.069 [pool-3-thread-2] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:38.069 [pool-3-thread-2] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:38.069 [pool-3-thread-2] Peer - Message Sent: Lookup{type='CHORD', operation='LOOKUP', sender=212(192.168.1.235:56503), target=84}
+[DEBUG] 2021-05-10 13:00:38.069 [pool-3-thread-2] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:38.112 [pool-3-thread-2] Peer - Message received: LookupReply{type='CHORD', operation='LOOKUPREPLY', sender=29(127.0.0.1:8001), reference=174(192.168.1.235:56411)}
+javax.net.ssl|ALL|16|pool-3-thread-2|2021-05-10 13:00:38.112 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:38.112 [pool-3-thread-2] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:38.115 [pool-3-thread-2] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|20|pool-2-thread-10|2021-05-10 13:00:38.118 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|20|pool-2-thread-10|2021-05-10 13:00:38.118 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|20|pool-2-thread-10|2021-05-10 13:00:38.118 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:38.122 [pool-3-thread-2] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:38.122 [pool-3-thread-2] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:38.122 [pool-3-thread-2] Peer - Message Sent: Lookup{type='CHORD', operation='LOOKUP', sender=212(192.168.1.235:56503), target=84}
+[DEBUG] 2021-05-10 13:00:38.122 [pool-3-thread-2] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:38.165 [pool-3-thread-2] Peer - Message received: LookupReply{type='CHORD', operation='LOOKUPREPLY', sender=29(127.0.0.1:8001), reference=174(192.168.1.235:56411)}
+javax.net.ssl|ALL|16|pool-3-thread-2|2021-05-10 13:00:38.165 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:38.165 [pool-3-thread-2] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:38.166 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:40.064 [pool-3-thread-2] ChordPeer - Fixing finger:1
+[DEBUG] 2021-05-10 13:00:40.064 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:42.052 [pool-3-thread-2] ChordPeer - Fixing finger:2
+[DEBUG] 2021-05-10 13:00:42.052 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:43.054 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:00:43.054 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:00:43.056 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|22|pool-2-thread-11|2021-05-10 13:00:43.059 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|22|pool-2-thread-11|2021-05-10 13:00:43.059 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|22|pool-2-thread-11|2021-05-10 13:00:43.059 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:43.062 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:43.062 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:43.062 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 13:00:43.062 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:43.063 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:43.063 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:43.063 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:43.063 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 13:00:43.063 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 13:00:43.066 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|23|pool-2-thread-12|2021-05-10 13:00:43.070 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|23|pool-2-thread-12|2021-05-10 13:00:43.071 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|23|pool-2-thread-12|2021-05-10 13:00:43.071 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:43.074 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:43.074 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:43.074 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:43.074 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:43.075 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:44.064 [pool-3-thread-2] ChordPeer - Fixing finger:3
+[DEBUG] 2021-05-10 13:00:44.064 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:46.061 [pool-3-thread-2] ChordPeer - Fixing finger:4
+[DEBUG] 2021-05-10 13:00:46.061 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:48.054 [pool-3-thread-2] ChordPeer - Fixing finger:5
+[DEBUG] 2021-05-10 13:00:48.054 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:49.066 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:00:49.066 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:00:49.068 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|24|pool-2-thread-13|2021-05-10 13:00:49.070 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|24|pool-2-thread-13|2021-05-10 13:00:49.071 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|24|pool-2-thread-13|2021-05-10 13:00:49.071 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:49.074 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:49.074 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:49.074 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 13:00:49.074 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:49.075 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:49.075 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:49.075 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:49.075 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 13:00:49.075 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 13:00:49.077 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|25|pool-2-thread-14|2021-05-10 13:00:49.081 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|25|pool-2-thread-14|2021-05-10 13:00:49.081 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|25|pool-2-thread-14|2021-05-10 13:00:49.081 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:49.087 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:49.087 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:49.088 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:49.088 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:00:49.088 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:50.066 [pool-3-thread-2] ChordPeer - Fixing finger:6
+[DEBUG] 2021-05-10 13:00:50.066 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:52.056 [pool-3-thread-2] ChordPeer - Fixing finger:7
+[DEBUG] 2021-05-10 13:00:52.056 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:00:54.054 [pool-3-thread-2] ChordPeer - Fixing finger:8
+[DEBUG] 2021-05-10 13:00:54.058 [pool-3-thread-2] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|26|pool-2-thread-15|2021-05-10 13:00:54.061 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|26|pool-2-thread-15|2021-05-10 13:00:54.061 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|26|pool-2-thread-15|2021-05-10 13:00:54.061 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:00:54.064 [pool-3-thread-2] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:54.064 [pool-3-thread-2] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:54.064 [pool-3-thread-2] Peer - Message Sent: Lookup{type='CHORD', operation='LOOKUP', sender=212(192.168.1.235:56503), target=84}
+[DEBUG] 2021-05-10 13:00:54.064 [pool-3-thread-2] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:00:55.059 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:00:55.059 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:00:55.061 [pool-3-thread-1] SSLPeer - Starting handshake...
+[DEBUG] 2021-05-10 13:00:59.456 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:00:59.456 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:00:59.456 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 13:00:59.456 [pool-3-thread-1] Peer - [PEER] Reading data...
+[ERROR] 2021-05-10 13:00:59.456 [pool-3-thread-1] Peer - Received EOS. Trying to close connection...
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:00:59.456 BST|SSLEngineImpl.java:724|Closing inbound of SSLEngine
+javax.net.ssl|ERROR|15|pool-3-thread-1|2021-05-10 13:00:59.457 BST|TransportContext.java:344|Fatal (INTERNAL_ERROR): closing inbound before receiving peer's close_notify (
+"throwable" : {
+  javax.net.ssl.SSLException: closing inbound before receiving peer's close_notify
+  	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:133)
+  	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:117)
+  	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:339)
+  	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:295)
+  	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:286)
+  	at java.base/sun.security.ssl.SSLEngineImpl.closeInbound(SSLEngineImpl.java:733)
+  	at peer.ssl.SSLPeer.handleEndOfStream(SSLPeer.java:316)
+  	at peer.Peer.readWithReply(Peer.java:108)
+  	at peer.chord.ChordPeer.getPredecessorFromSuccessor(ChordPeer.java:193)
+  	at peer.chord.ChordPeer.stabilize(ChordPeer.java:214)
+  	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
+  	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:305)
+  	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+  	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+[ERROR] 2021-05-10 13:00:59.457 [pool-3-thread-1] SSLPeer - This engine was forced to close due to end of stream without receiving the notification from peer
+  	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+  	at java.base/java.lang.Thread.run(Thread.java:834)}
+
+)
+[DEBUG] 2021-05-10 13:00:59.457 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:00:59.457 [pool-3-thread-1] Peer - Connection closed!
+[DEBUG] 2021-05-10 13:00:59.457 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+java.lang.NullPointerException
+	at peer.chord.ChordPeer.getPredecessorFromSuccessor(ChordPeer.java:195)
+	at peer.chord.ChordPeer.stabilize(ChordPeer.java:214)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:515)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:305)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+[DEBUG] 2021-05-10 13:00:59.458 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 13:00:59.461 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|13|pool-2-thread-1|2021-05-10 13:01:00.510 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|13|pool-2-thread-1|2021-05-10 13:01:00.510 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|13|pool-2-thread-1|2021-05-10 13:01:00.511 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:01:00.515 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:01:00.515 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:01:00.516 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:01:00.516 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:01:00.516 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:01:01.053 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:01:01.053 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:01:01.056 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|17|pool-2-thread-2|2021-05-10 13:01:01.059 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|17|pool-2-thread-2|2021-05-10 13:01:01.059 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|17|pool-2-thread-2|2021-05-10 13:01:01.059 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:01:01.062 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:01:01.063 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:01:01.063 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 13:01:01.063 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:01:01.063 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:01:01.063 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:01:01.064 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:01:01.064 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 13:01:01.064 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 13:01:01.067 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|18|pool-2-thread-3|2021-05-10 13:01:01.070 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|18|pool-2-thread-3|2021-05-10 13:01:01.070 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|18|pool-2-thread-3|2021-05-10 13:01:01.070 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:01:01.076 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:01:01.076 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:01:01.076 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:01:01.076 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:01:01.077 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:01:07.054 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:01:07.054 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:01:07.056 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|19|pool-2-thread-4|2021-05-10 13:01:07.059 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|19|pool-2-thread-4|2021-05-10 13:01:07.059 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|19|pool-2-thread-4|2021-05-10 13:01:07.059 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:01:07.063 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:01:07.063 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:01:07.063 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 13:01:07.063 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:01:07.064 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:01:07.064 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:01:07.064 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:01:07.064 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 13:01:07.064 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 13:01:07.066 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1A|pool-2-thread-5|2021-05-10 13:01:07.070 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1A|pool-2-thread-5|2021-05-10 13:01:07.070 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1A|pool-2-thread-5|2021-05-10 13:01:07.070 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:01:07.074 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:01:07.074 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:01:07.075 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:01:07.075 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:01:07.075 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:01:13.057 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:01:13.057 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:01:13.059 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1C|pool-2-thread-6|2021-05-10 13:01:13.062 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1C|pool-2-thread-6|2021-05-10 13:01:13.062 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1C|pool-2-thread-6|2021-05-10 13:01:13.063 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:01:13.067 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:01:13.067 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:01:13.067 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 13:01:13.067 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:01:13.068 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:01:13.068 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:01:13.068 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:01:13.068 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 13:01:13.068 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 13:01:13.070 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1D|pool-2-thread-7|2021-05-10 13:01:13.075 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1D|pool-2-thread-7|2021-05-10 13:01:13.075 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1D|pool-2-thread-7|2021-05-10 13:01:13.075 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:01:13.080 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:01:13.080 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:01:13.081 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:01:13.081 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:01:13.081 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:01:19.055 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:01:19.055 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:01:19.057 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1E|pool-2-thread-8|2021-05-10 13:01:19.061 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1E|pool-2-thread-8|2021-05-10 13:01:19.061 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1E|pool-2-thread-8|2021-05-10 13:01:19.061 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:01:19.065 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:01:19.065 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:01:19.066 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 13:01:19.066 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:01:19.067 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:01:19.067 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:01:19.067 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:01:19.067 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 13:01:19.067 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 13:01:19.069 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|1F|pool-2-thread-9|2021-05-10 13:01:19.074 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1F|pool-2-thread-9|2021-05-10 13:01:19.074 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|1F|pool-2-thread-9|2021-05-10 13:01:19.074 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:01:19.078 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:01:19.078 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:01:19.078 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:01:19.079 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:01:19.079 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:01:25.065 [pool-3-thread-1] ChordPeer - Performing stabilization...
+[DEBUG] 2021-05-10 13:01:25.065 [pool-3-thread-1] ChordPeer - Getting predecessor from successor...
+[DEBUG] 2021-05-10 13:01:25.068 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|20|pool-2-thread-10|2021-05-10 13:01:25.074 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|20|pool-2-thread-10|2021-05-10 13:01:25.074 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|20|pool-2-thread-10|2021-05-10 13:01:25.074 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:01:25.079 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:01:25.079 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:01:25.079 [pool-3-thread-1] Peer - Message Sent: Message{type='CHORD', operation='PREDECESSOR', sender=212(192.168.1.235:56503)}
+[DEBUG] 2021-05-10 13:01:25.080 [pool-3-thread-1] Peer - [PEER] Reading data...
+[DEBUG] 2021-05-10 13:01:25.080 [pool-3-thread-1] Peer - Message received: Message{type='CHORD', operation='PREDECESSORREPLY', sender=29(127.0.0.1:8001)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:01:25.080 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:01:25.080 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:01:25.080 [pool-3-thread-1] ChordPeer - Predecessor found: 212(192.168.1.235:56503)
+[DEBUG] 2021-05-10 13:01:25.080 [pool-3-thread-1] ChordPeer - Notifying Peer:29 about Peer:212
+[DEBUG] 2021-05-10 13:01:25.084 [pool-3-thread-1] SSLPeer - Starting handshake...
+javax.net.ssl|ALL|22|pool-2-thread-11|2021-05-10 13:01:25.087 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|22|pool-2-thread-11|2021-05-10 13:01:25.087 BST|X509Authentication.java:246|No X.509 cert selected for EC
+javax.net.ssl|ALL|22|pool-2-thread-11|2021-05-10 13:01:25.087 BST|X509Authentication.java:246|No X.509 cert selected for EC
+[DEBUG] 2021-05-10 13:01:25.090 [pool-3-thread-1] SSLPeer - Connected to Peer on: /127.0.0.1:8001
+[DEBUG] 2021-05-10 13:01:25.090 [pool-3-thread-1] Peer - [PEER] Writing data...
+[DEBUG] 2021-05-10 13:01:25.091 [pool-3-thread-1] Peer - Message Sent: Notification{type='CHORD', operation='NOTIFICATION', sender=212(192.168.1.235:56503), reference=212(192.168.1.235:56503)}
+javax.net.ssl|ALL|15|pool-3-thread-1|2021-05-10 13:01:25.091 BST|SSLEngineImpl.java:752|Closing outbound of SSLEngine
+[DEBUG] 2021-05-10 13:01:25.091 [pool-3-thread-1] SSLPeer - Connection Successfully Closed!
+[DEBUG] 2021-05-10 13:01:27.331 [pool-3-thread-2] ChordPeer - Could not connect to peer.
+[DEBUG] 2021-05-10 13:01:27.331 [pool-3-thread-2] ChordPeer - Something went wrong, successor came null!
+[DEBUG] 2021-05-10 13:01:27.331 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:01:27.332 [pool-3-thread-2] ChordPeer - Fixing finger:1
+[DEBUG] 2021-05-10 13:01:27.332 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:01:27.332 [pool-3-thread-2] ChordPeer - Fixing finger:2
+[DEBUG] 2021-05-10 13:01:27.332 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:01:27.332 [pool-3-thread-2] ChordPeer - Fixing finger:3
+[DEBUG] 2021-05-10 13:01:27.332 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:01:27.332 [pool-3-thread-2] ChordPeer - Fixing finger:4
+[DEBUG] 2021-05-10 13:01:27.332 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:01:27.332 [pool-3-thread-2] ChordPeer - Fixing finger:5
+[DEBUG] 2021-05-10 13:01:27.333 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:01:27.333 [pool-3-thread-2] ChordPeer - Fixing finger:6
+[DEBUG] 2021-05-10 13:01:27.333 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:01:27.333 [pool-3-thread-2] ChordPeer - Fixing finger:7
+[DEBUG] 2021-05-10 13:01:27.333 [pool-3-thread-2] ChordPeer - Finger table after fixing:
+0-29(127.0.0.1:8001)
+1-29(127.0.0.1:8001)
+2-29(127.0.0.1:8001)
+3-29(127.0.0.1:8001)
+4-29(127.0.0.1:8001)
+5-29(127.0.0.1:8001)
+6-29(127.0.0.1:8001)
+7-174(192.168.1.235:56411)
+[DEBUG] 2021-05-10 13:01:27.333 [pool-3-thread-2] ChordPeer - Fixing finger:8

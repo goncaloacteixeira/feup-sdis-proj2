@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
 public class NotificationOp extends ChordOperation {
-    public NotificationOp(SocketChannel channel, SSLEngine engine, Notification message, Peer context) {
-        super(channel, engine, message, context);
+    public NotificationOp(SSLConnection connection, Notification message, Peer context) {
+        super(connection, message, context);
     }
 
     @Override
@@ -23,12 +23,6 @@ public class NotificationOp extends ChordOperation {
         if (context.getPredecessor() == null || ChordPeer.between(reference.getGuid(), context.getPredecessor().getGuid(), context.getGuid(), true)) {
             log.debug("Updated predecessor: " + reference);
             context.setPredecessor(reference);
-        }
-
-        try {
-            context.closeConnection(new SSLConnection(channel, engine, true));
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

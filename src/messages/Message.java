@@ -4,6 +4,7 @@ import messages.chord.ChordMessage;
 import operations.Operation;
 import peer.Peer;
 import peer.chord.ChordReference;
+import peer.ssl.SSLConnection;
 
 import javax.net.ssl.SSLEngine;
 import java.nio.channels.SocketChannel;
@@ -31,7 +32,7 @@ public abstract class Message {
 
     public abstract byte[] encode();
 
-    public abstract Operation getOperation(Peer context, SocketChannel channel, SSLEngine engine);
+    public abstract Operation getOperation(Peer context, SSLConnection connection);
 
     public static Message parse(byte[] buffer, int size) {
         String packetData = new String(buffer);

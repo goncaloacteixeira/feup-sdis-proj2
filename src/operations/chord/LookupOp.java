@@ -14,8 +14,8 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 
 public class LookupOp extends ChordOperation {
-    public LookupOp(SocketChannel channel, SSLEngine engine, Lookup message, Peer context) {
-        super(channel, engine, message, context);
+    public LookupOp(SSLConnection connection, Lookup message, Peer context) {
+        super(connection, message, context);
     }
 
     @Override
@@ -43,17 +43,27 @@ public class LookupOp extends ChordOperation {
                 SSLConnection connection = context.connectToPeer(closest.getAddress(), true);
                 if (connection.handshake()) {
                     Message message = new Lookup(self, String.valueOf(target).getBytes(StandardCharsets.UTF_8));
+                    log.debug("Sending Lookup message to: " + closest.getGuid());
                     context.sendMessage(connection, message);
-                    LookupReply reply = (LookupReply) context.readWithReply(connection.getSocketChannel(), connection.getEngine());
+                    LookupReply reply = (LookupReply) context.readWithReply(connection);
                     context.closeConnection(connection);
 
-                    if (closest.getGuid() == reply.getReference().getGuid()) {
+                    if (reply.getReference() == null) continue;
+
+                    if (closest.getGuid() == reply.getReference().getGuid() || reply.getReference().getGuid() == this.message.getSender().getGuid()) {
                         log.debug("Successor is same: " + closest);
                         sendReply(closest);
                         return;
                     }
 
                     closest = reply.getReference();
+
+                    if (reply.getReference().getGuid() == context.getGuid()) {
+                        log.debug("The successor is me!");
+                        sendReply(closest);
+                        return;
+                    }
+
                     log.debug("New closest: " + closest.getGuid());
                 } else {
                     log.debug("Handshake to peer failed");
@@ -63,10 +73,12 @@ public class LookupOp extends ChordOperation {
                 log.debug("Could not connect to peer.");
                 return;
             } catch (Exception e) {
-                log.error("Could not send message!");
+                log.error("Could not send message!: " + e + " localized: " + e.getLocalizedMessage());
                 return;
             }
         }
+
+        sendReply(closest);
     }
 
     private void sendReply(ChordReference reference) {
@@ -75,7 +87,7 @@ public class LookupOp extends ChordOperation {
         Message message = new LookupReply(context.getReference(), reference.toString().getBytes(StandardCharsets.UTF_8));
 
         try {
-            context.write(this.channel, this.engine, message.encode());
+            context.write(this.connection, message.encode());
         } catch (IOException e) {
             log.error("Error writing: " + e);
         }
