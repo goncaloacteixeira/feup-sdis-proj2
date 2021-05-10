@@ -1,36 +1,125 @@
 package peer.ssl;
 
+import messages.Message;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLEngineResult;
-import javax.net.ssl.SSLException;
+import javax.net.ssl.*;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.security.KeyStore;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public abstract class SSLClient<M> {
     public static final Logger log = LogManager.getLogger(SSLClient.class);
 
-    private final SSLContext context;
+    protected SSLContext context;
 
     private final Decoder<M> decoder;
     private final Encoder<M> encoder;
     protected ExecutorService executor = Executors.newFixedThreadPool(16);
 
-    public SSLClient(SSLContext context, Decoder<M> decoder, Encoder<M> encoder) throws Exception {
+    public SSLClient(Decoder<M> decoder, Encoder<M> encoder) {
         this.decoder = decoder;
         this.encoder = encoder;
-        this.context = context;
+    }
+
+    public M receive(SSLConnection connection) throws Exception {
+        log.debug("[PEER] Reading data...");
+
+        SSLEngine engine = connection.getEngine();
+
+        connection.getPeerNetData().clear();
+
+        int bytesRead = connection.getSocketChannel().read(connection.getPeerNetData());
+        if (bytesRead > 0) {
+            connection.getPeerNetData().flip();
+
+            M message = null;
+
+            while (connection.getPeerNetData().hasRemaining()) {
+                connection.getPeerData().clear();
+                SSLEngineResult result = engine.unwrap(connection.getPeerNetData(), connection.getPeerData());
+
+                switch (result.getStatus()) {
+                    case OK:
+                        connection.getPeerData().flip();
+
+                        message = this.decoder.decode(connection.getPeerData());
+                        log.debug("Message received: " + message);
+
+                        break;
+                    case BUFFER_OVERFLOW:
+                        connection.setPeerData(this.enlargeApplicationBuffer(engine, connection.getPeerData()));
+                        break;
+                    case BUFFER_UNDERFLOW:
+                        connection.setPeerNetData(this.handleBufferUnderflow(engine, connection.getPeerNetData()));
+                        break;
+                    case CLOSED:
+                        log.debug("The other peer requests closing the connection");
+                        // this.closeConnection(connection);
+                        connection.getEngine().closeOutbound();
+                        connection.getSocketChannel().close();
+                        log.debug("Connection closed!");
+                        return null;
+                    default:
+                        throw new IllegalStateException("Invalid SSL Status: " + result.getStatus());
+                }
+            }
+
+            return message;
+        } else if (bytesRead < 0) {
+            log.error("Received EOS. Trying to close connection...");
+            handleEndOfStream(connection);
+            log.debug("Connection closed!");
+        }
+
+        return null;
+    }
+
+    public void send(SSLConnection connection, M message) throws IOException {
+        log.debug("[PEER] Writing data...");
+
+        SSLEngine engine = connection.getEngine();
+
+        connection.getAppData().clear();
+        encoder.encode(message, connection.getAppData());
+        connection.getAppData().flip();
+        while (connection.getAppData().hasRemaining()) {
+            connection.getNetData().clear();
+            SSLEngineResult result = engine.wrap(connection.getAppData(), connection.getNetData());
+            switch (result.getStatus()) {
+                case OK:
+                    connection.getNetData().flip();
+                    int bytesWritten = 0;
+                    while (connection.getNetData().hasRemaining()) {
+                        bytesWritten += connection.getSocketChannel().write(connection.getNetData());
+                    }
+                    log.debug("Message Sent: " + message);
+                    break;
+                case BUFFER_OVERFLOW:
+                    connection.setNetData(enlargePacketBuffer(engine, connection.getNetData()));
+                    break;
+                case CLOSED:
+                    this.closeConnection(connection);
+                    return;
+                default:
+                    throw new IllegalStateException("Invalid SSL Status: " + result.getStatus());
+            }
+        }
+
     }
 
     public SSLConnection connectToPeer(InetSocketAddress socketAddress, boolean blocking) throws IOException {
-        SSLEngine engine = context.createSSLEngine();
+        SSLEngine engine = context.createSSLEngine(socketAddress.getAddress().getHostAddress(), socketAddress.getPort());
         engine.setUseClientMode(true);
 
         ByteBuffer appData = ByteBuffer.allocate(engine.getSession().getApplicationBufferSize());
@@ -48,226 +137,200 @@ public abstract class SSLClient<M> {
             // can do something here...
         }
         engine.beginHandshake();
-        this.checkHandshakeStatus(connection);
+        try {
+            connection.setHandshake(this.doHandshake(connection));
+        } catch (IOException e) {
+            log.error("Could not validate handshake!");
+            return connection;
+        }
 
+        log.debug("Connected to Peer on: " + socketAddress);
+        log.debug("Channel: " + socketChannel);
         return connection;
     }
 
-    public void send(M message, SSLConnection connection) throws IOException {
-        this.encoder.encode(message, connection.getAppData());
-        doWrap(connection);
-    }
-
-    public M receive(SSLConnection connection) throws IOException {
-        while (true) {
-            connection.getPeerData().flip();
-            try {
-                final M message = decoder.decode(connection.getPeerData());
-                if (message != null) {
-                    return message;
-                }
-            } finally {
-                connection.getPeerData().compact();
-            }
-            doUnwrap(connection);
-        }
-    }
-
-    private void checkHandshakeStatus(SSLConnection connection) throws IOException {
-        checkHandshakeStatus(connection, connection.getEngine().getHandshakeStatus());
-    }
-
-    private void checkHandshakeStatus(SSLConnection connection, SSLEngineResult.HandshakeStatus handshakeStatus) throws IOException {
-        switch (handshakeStatus) {
-            case NOT_HANDSHAKING:
-                // No action necessary
-                return;
-            case FINISHED:
-                log.debug("Initial SSL handshake finished - using protocol: " + connection.getEngine().getSession().getProtocol());
-                return;
-            case NEED_WRAP:
-                doWrap(connection);
-                break;
-
-            case NEED_UNWRAP:
-                doUnwrap(connection);
-                break;
-
-            case NEED_TASK:
-                // The SSLEngine has some task(s) that must be run before continuing
-                Runnable task;
-                while ((task = connection.getEngine().getDelegatedTask()) != null) {
-                    executor.submit(task);
-                }
-                checkHandshakeStatus(connection);
-                break;
-
-            default:
-                throw new IllegalStateException("Invalid SSL handshake status: " + handshakeStatus);
-        }
-    }
-
-    private void doWrap(SSLConnection connection) throws IOException {
-        connection.getAppData().flip();
-        final SSLEngineResult result;
-        try {
-            result = connection.getEngine().wrap(connection.getAppData(), connection.getNetData());
-        } catch (SSLException e) {
-            log.trace("Exception while calling SSLEngine.wrap()", e);
-            closeChannel(connection);
-            return;
-        }
-        connection.getAppData().compact();
-        log.trace("Result of SSLEngine.wrap(): {}", result);
-
-        // It is important to perform the appropriate action for the result status and the result handshake status.
-        // NOTE: The handshake status FINISHED is a transient status. It is important to look at the status in the
-        // result and not just call sslEngine.getStatus() because the FINISHED status will only be reported once,
-        // in the result returned by wrap() or unwrap().
-
-        final SSLEngineResult.Status status = result.getStatus();
-        switch (status) {
-            case OK:
-                flush(connection);
-                checkHandshakeStatus(connection);
-                // Repeat wrap if there is still data in the application output buffer
-                if (connection.getAppData().position() > 0) {
-                    doWrap(connection);
-                }
-                break;
-            case CLOSED:
-                flush(connection);
-                checkHandshakeStatus(connection);
-                close(connection);
-                break;
-            case BUFFER_OVERFLOW:
-                // The network output buffer does not have enough space, re-allocate and retry wrap
-                // (NOTE: packet buffer size as reported by the SSL session might change dynamically)
-                connection.setNetData(ensureRemaining(connection.getNetData(), connection.getEngine().getSession().getPacketBufferSize()));
-                doWrap(connection);
-                break;
-            default:
-                throw new IllegalStateException("Invalid SSL status: " + status);
-        }
-    }
-
-    private void flush(SSLConnection connection) throws IOException {
-        // Flush the content of the network output buffer to the socket channel
-        connection.getNetData().flip();
-        try {
-            while (connection.getNetData().hasRemaining()) {
-                connection.getSocketChannel().write(connection.getNetData());
-            }
-        } finally {
-            connection.getNetData().compact();
-        }
-    }
-
-    private void doUnwrap(SSLConnection connection) throws IOException {
-        if (connection.getPeerNetData().position() == 0) {
-            // The network input buffer is empty; read data from the channel before doing the unwrap
-            final int count = connection.getSocketChannel().read(connection.getPeerNetData());
-            if (count == -1) {
-                handleEndOfStream(connection);
-                return;
-            }
-        }
-
-        connection.getPeerNetData().flip();
-        final SSLEngineResult result;
-        try {
-            result = connection.getEngine().unwrap(connection.getPeerNetData(), connection.getPeerData());
-        } catch (SSLException e) {
-            log.warn("Exception while calling SSLEngine.unwrap()", e);
-            closeChannel(connection);
-            return;
-        }
-        connection.getPeerNetData().compact();
-        log.trace("Result of SSLEngine.unwrap(): {}", result);
-
-        // It is important to perform the appropriate action for the result status and the result handshake status.
-        // NOTE: The handshake status FINISHED is a transient status. It is important to look at the status in the
-        // result and not just call sslEngine.getStatus() because the FINISHED status will only be reported once,
-        // in the result returned by wrap() or unwrap().
-
-        final SSLEngineResult.Status status = result.getStatus();
-        switch (status) {
-            case OK:
-                checkHandshakeStatus(connection);
-                break;
-
-            case CLOSED:
-                checkHandshakeStatus(connection);
-                close(connection);
-                break;
-
-            case BUFFER_UNDERFLOW:
-                // The network input buffer might not have enough space, re-allocate if necessary
-                // (NOTE: packet buffer size as reported by the SSL session might change dynamically)
-                connection.setPeerNetData(ensureRemaining(connection.getPeerNetData(), connection.getEngine().getSession().getPacketBufferSize()));
-
-                // Read data from the channel, retry unwrap if not end-of-stream
-                final int count = connection.getSocketChannel().read(connection.getPeerNetData());
-                if (count == -1) {
-                    handleEndOfStream(connection);
-                    return;
-                }
-                doUnwrap(connection);
-                break;
-
-            case BUFFER_OVERFLOW:
-                // The application input buffer does not have enough space, re-allocate and retry unwrap
-                // (NOTE: application buffer size as reported by the SSL session might change dynamically)
-                connection.setPeerData(ensureRemaining(connection.getPeerData(), connection.getEngine().getSession().getApplicationBufferSize()));
-                doUnwrap(connection);
-                break;
-            default:
-                throw new IllegalStateException("Invalid SSL status: " + status);
-        }
-    }
-
-    private void handleEndOfStream(SSLConnection connection) throws IOException {
-        try {
-            // This will check if the server has sent the appropriate SSL close handshake alert and throws an exception
-            // if it did not. Note that some servers don't, so this should not be treated as a fatal exception.
-            connection.getEngine().closeInbound();
-            close(connection);
-        } catch (SSLException e) {
-            // This exception might happen because some servers do not respond to the client's close notify alert
-            // message during the SSL close handshake; they just close the connection. This is normally not a problem.
-            log.debug("Exception while calling SSLEngine.closeInbound(): {}", e.getMessage());
-            closeChannel(connection);
-        }
-    }
-
-    private ByteBuffer ensureRemaining(ByteBuffer oldBuffer, int newRemaining) {
-        if (oldBuffer.remaining() < newRemaining) {
-            oldBuffer.flip();
-            final ByteBuffer newBuffer = ByteBuffer.allocate(oldBuffer.remaining() + newRemaining);
-            newBuffer.put(oldBuffer);
-            return newBuffer;
-        } else {
-            // Buffer does not need to be reallocated, there is already enough remaining
-            return oldBuffer;
-        }
-    }
-
-    public void close(SSLConnection connection) throws IOException {
-        // This tells the SSLEngine that we are not going to pass it any more application data
-        // and prepares it for the close handshake
-        log.trace("Performing closing SSL handshake");
+    public void closeConnection(SSLConnection connection) throws IOException {
         connection.getEngine().closeOutbound();
-
-        // Perform close handshake
-        checkHandshakeStatus(connection);
-
-        closeChannel(connection);
+        this.doHandshake(connection);
+        connection.getSocketChannel().close();
     }
 
-    private void closeChannel(SSLConnection connection) throws IOException {
-        if (connection.getSocketChannel().isOpen()) {
-            log.debug("Closing socket channel");
-            connection.getSocketChannel().close();
+    protected boolean doHandshake(SSLConnection connection) throws IOException {
+        log.debug("Starting handshake...");
+
+        SSLEngineResult result;
+        SSLEngineResult.HandshakeStatus handshakeStatus;
+
+        SSLEngine engine = connection.getEngine();
+        SocketChannel socketChannel = connection.getSocketChannel();
+
+        int appBufferSize = engine.getSession().getApplicationBufferSize();
+        ByteBuffer applicationData = ByteBuffer.allocate(appBufferSize);
+        ByteBuffer peerApplicationData = ByteBuffer.allocate(appBufferSize);
+        connection.getNetData().clear();
+        connection.getPeerNetData().clear();
+
+        handshakeStatus = engine.getHandshakeStatus();
+        while (handshakeStatus != SSLEngineResult.HandshakeStatus.FINISHED && handshakeStatus != SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING) {
+            switch (handshakeStatus) {
+                case NEED_UNWRAP:
+                    if (socketChannel.read(connection.getPeerNetData()) < 0) {
+                        if (engine.isInboundDone() && engine.isOutboundDone()) {
+                            return false;
+                        }
+                        try {
+                            engine.closeInbound();
+                        } catch (SSLException e) {
+                            log.error("Engine was forced to close inbound. Message: " + e.getMessage());
+                        }
+                        engine.closeOutbound();
+                        handshakeStatus = engine.getHandshakeStatus();
+                        break;
+                    }
+                    connection.getPeerNetData().flip();
+                    try {
+                        do {
+                            result = engine.unwrap(connection.getPeerNetData(), peerApplicationData);
+                        } while (connection.getPeerNetData().hasRemaining() || result.bytesProduced() > 0);
+
+                        connection.getPeerNetData().compact();
+                        handshakeStatus = result.getHandshakeStatus();
+                    } catch (SSLException e) {
+                        log.error("Error processing data, will try to close gracefully: " + Arrays.toString(e.getStackTrace()));
+                        engine.closeOutbound();
+                        handshakeStatus = engine.getHandshakeStatus();
+                        break;
+                    }
+                    switch (result.getStatus()) {
+                        case OK:
+                            break;
+                        case BUFFER_OVERFLOW:
+                            peerApplicationData = enlargeApplicationBuffer(engine, peerApplicationData);
+                            break;
+                        case BUFFER_UNDERFLOW:
+                            connection.setPeerNetData(handleBufferUnderflow(engine, connection.getPeerNetData()));
+                            break;
+                        case CLOSED:
+                            if (engine.isOutboundDone()) {
+                                return false;
+                            } else {
+                                engine.closeOutbound();
+                                handshakeStatus = engine.getHandshakeStatus();
+                                break;
+                            }
+                        default:
+                            throw new IllegalStateException("Invalid SSL Status: " + result.getStatus());
+                    }
+                    break;
+                case NEED_WRAP:
+                    connection.getNetData().clear();
+                    try {
+                        result = engine.wrap(applicationData, connection.getNetData());
+                        handshakeStatus = result.getHandshakeStatus();
+                    } catch (SSLException e) {
+                        log.error("Error processing data, will try to close gracefully: " + e + " localized: " + e.getLocalizedMessage() + " cause: " + e.getCause());
+                        engine.closeOutbound();
+                        handshakeStatus = engine.getHandshakeStatus();
+                        break;
+                    }
+                    switch (result.getStatus()) {
+                        case OK:
+                            connection.getNetData().flip();
+                            while (connection.getNetData().hasRemaining()) {
+                                socketChannel.write(connection.getNetData());
+                            }
+                            break;
+                        case BUFFER_OVERFLOW:
+                            connection.setNetData(enlargePacketBuffer(engine, connection.getNetData()));
+                            break;
+                        case CLOSED:
+                            try {
+                                connection.getNetData().flip();
+                                while (connection.getNetData().hasRemaining()) {
+                                    socketChannel.write(connection.getNetData());
+                                }
+                                connection.getPeerNetData().clear();
+                            } catch (Exception e) {
+                                log.trace("Failed to send CLOSE message due to socket channel's failure: " + e.getMessage());
+                                handshakeStatus = engine.getHandshakeStatus();
+                            }
+                            break;
+                        default:
+                            throw new IllegalStateException("Invalid SSL Status: " + result.getStatus());
+                    }
+                    break;
+                case NEED_TASK:
+                    Runnable task;
+                    while ((task = engine.getDelegatedTask()) != null) {
+                        executor.execute(task);
+                    }
+                    handshakeStatus = engine.getHandshakeStatus();
+                    break;
+                case FINISHED:
+                case NOT_HANDSHAKING:
+                    break;
+                default:
+                    throw new IllegalStateException("Invalid SSL Status: " + handshakeStatus);
+            }
         }
+        log.debug("Handshake Valid!");
+        return true;
     }
+
+    protected ByteBuffer enlargePacketBuffer(SSLEngine engine, ByteBuffer buffer) {
+        return enlargeBuffer(buffer, engine.getSession().getPacketBufferSize());
+    }
+
+    protected ByteBuffer enlargeApplicationBuffer(SSLEngine engine, ByteBuffer buffer) {
+        return enlargeBuffer(buffer, engine.getSession().getApplicationBufferSize());
+    }
+
+    protected ByteBuffer enlargeBuffer(ByteBuffer buffer, int size) {
+        if (size > buffer.capacity()) {
+            buffer = ByteBuffer.allocate(size);
+        } else {
+            buffer = ByteBuffer.allocate(buffer.capacity() * 2);
+        }
+        return buffer;
+    }
+
+    protected ByteBuffer handleBufferUnderflow(SSLEngine engine, ByteBuffer buffer) {
+        if (engine.getSession().getPacketBufferSize() < buffer.limit()) {
+            return buffer;
+        }
+        ByteBuffer replaceBuffer = enlargePacketBuffer(engine, buffer);
+        buffer.flip();
+        replaceBuffer.put(buffer);
+        return replaceBuffer;
+    }
+
+    protected void handleEndOfStream(SSLConnection connection) throws IOException {
+        try {
+            connection.getEngine().closeInbound();
+        } catch (Exception e) {
+            log.error("This engine was forced to close due to end of stream without receiving the notification from peer");
+        }
+        closeConnection(connection);
+    }
+
+    protected KeyManager[] createKeyManager(String filepath, String keystorePassword, String keyPassword) throws Exception {
+        KeyStore keyStore = KeyStore.getInstance("JKS");
+        try (InputStream is = new FileInputStream(filepath)) {
+            keyStore.load(is, keystorePassword.toCharArray());
+        }
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(keyStore, keyPassword.toCharArray());
+        return kmf.getKeyManagers();
+    }
+
+    protected TrustManager[] createTrustManager(String filepath, String keystorePassword) throws Exception {
+        KeyStore trustStore = KeyStore.getInstance("JKS");
+        try (InputStream is = new FileInputStream(filepath)) {
+            trustStore.load(is, keystorePassword.toCharArray());
+        }
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(trustStore);
+        return tmf.getTrustManagers();
+    }
+
 }

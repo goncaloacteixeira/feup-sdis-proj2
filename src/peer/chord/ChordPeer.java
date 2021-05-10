@@ -76,19 +76,14 @@ public abstract class ChordPeer extends SSLPeer {
         log.debug("Trying to join the CHORD circle on: " + this.bootPeer);
         try {
             SSLConnection bootPeerConnection = this.connectToPeer(bootPeer.getAddress(), true);
-            if (bootPeerConnection.handshake()) {
-                ChordReference self = new ChordReference(this.address, this.guid);
+            ChordReference self = new ChordReference(this.address, this.guid);
 
-                Message message = new Join(self);
-                // send join
-                this.sendMessage(bootPeerConnection, message);
-                // wait for GUID message and also Successor
-                // GUID task will automatically assign the GUID to the peer
-                ((Guid) this.readWithReply(bootPeerConnection)).getOperation((Peer) this, bootPeerConnection).run();
-            } else {
-                log.debug("Handshake to boot peer failed");
-                this.promote();
-            }
+            Message message = new Join(self);
+            // send join
+            this.send(bootPeerConnection, message);
+            // wait for GUID message and also Successor
+            // GUID task will automatically assign the GUID to the peer
+            this.receive(bootPeerConnection).getOperation((Peer) this, bootPeerConnection).run();
         } catch (IOException e) {
             log.debug("Could not connect to boot, promoting itself to boot peer: " + e.getMessage() + " localized: " + e.getLocalizedMessage() + " cause: " + e.getCause());
             e.printStackTrace();
@@ -152,17 +147,12 @@ public abstract class ChordPeer extends SSLPeer {
 
         try {
             SSLConnection connection = this.connectToPeer(closest.getAddress(), true);
-            if (connection.handshake()) {
-                Message message = new Lookup(self, String.valueOf(guid).getBytes(StandardCharsets.UTF_8));
-                this.sendMessage(connection, message);
-                LookupReply reply = (LookupReply) this.readWithReply(connection);
-                this.closeConnection(connection);
+            Message message = new Lookup(self, String.valueOf(guid).getBytes(StandardCharsets.UTF_8));
+            this.send(connection, message);
+            LookupReply reply = (LookupReply) this.receive(connection);
+            this.closeConnection(connection);
 
-                return reply.getReference();
-            } else {
-                log.debug("Handshake to peer failed");
-                return null;
-            }
+            return reply.getReference();
         } catch (IOException e) {
             log.debug("Could not connect to peer");
             e.printStackTrace();
@@ -191,19 +181,14 @@ public abstract class ChordPeer extends SSLPeer {
         }
         try {
             SSLConnection connection = this.connectToPeer(successor().getAddress(), true);
+            ChordReference self = new ChordReference(this.address, this.guid);
+            Message message = new Predecessor(self);
+            this.send(connection, message);
+            PredecessorReply reply = (PredecessorReply) this.receive(connection);
+            this.closeConnection(connection);
+            log.debug("Predecessor found: " + reply.getPredecessor());
 
-            if (connection != null && connection.handshake()) {
-                ChordReference self = new ChordReference(this.address, this.guid);
-                Message message = new Predecessor(self);
-                this.sendMessage(connection, message);
-                PredecessorReply reply = (PredecessorReply) this.readWithReply(connection);
-                this.closeConnection(connection);
-                log.debug("Predecessor found: " + reply.getPredecessor());
-                return reply.getPredecessor();
-            } else {
-                log.debug("Handshake to peer failed");
-                return null;
-            }
+            return reply.getPredecessor();
         } catch (IOException e) {
             log.debug("Could not connect to peer...");
             e.printStackTrace();
@@ -271,15 +256,10 @@ public abstract class ChordPeer extends SSLPeer {
 
         try {
             SSLConnection connection = this.connectToPeer(reference.getAddress(), true);
-
-            if (connection.handshake()) {
-                ChordReference self = new ChordReference(this.address, this.guid);
-                Message message = new Notification(self, context.toString().getBytes(StandardCharsets.UTF_8));
-                this.sendMessage(connection, message);
-                this.closeConnection(connection);
-            } else {
-                log.debug("Handshake to peer failed");
-            }
+            ChordReference self = new ChordReference(this.address, this.guid);
+            Message message = new Notification(self, context.toString().getBytes(StandardCharsets.UTF_8));
+            this.send(connection, message);
+            this.closeConnection(connection);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {

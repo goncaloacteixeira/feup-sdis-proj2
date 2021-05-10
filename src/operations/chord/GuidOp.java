@@ -31,8 +31,8 @@ public class GuidOp extends ChordOperation {
 
         Message message = new Lookup(context.getReference(), String.valueOf(context.getGuid()).getBytes(StandardCharsets.UTF_8));
         try {
-            context.write(this.connection, message.encode());
-            LookupReply reply = (LookupReply) context.readWithReply(this.connection);
+            context.send(this.connection, message);
+            LookupReply reply = (LookupReply) context.receive(this.connection);
             ChordReference successor = reply.getReference();
             log.debug("Got successor: " + successor);
             context.setSuccessor(successor);

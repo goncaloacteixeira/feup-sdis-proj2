@@ -41,34 +41,29 @@ public class LookupOp extends ChordOperation {
         while (closest.getGuid() != target) {
             try {
                 SSLConnection connection = context.connectToPeer(closest.getAddress(), true);
-                if (connection.handshake()) {
-                    Message message = new Lookup(self, String.valueOf(target).getBytes(StandardCharsets.UTF_8));
-                    log.debug("Sending Lookup message to: " + closest.getGuid());
-                    context.sendMessage(connection, message);
-                    LookupReply reply = (LookupReply) context.readWithReply(connection);
-                    context.closeConnection(connection);
+                Message message = new Lookup(self, String.valueOf(target).getBytes(StandardCharsets.UTF_8));
+                log.debug("Sending Lookup message to: " + closest.getGuid());
+                context.send(connection, message);
+                LookupReply reply = (LookupReply) context.receive(connection);
+                context.closeConnection(connection);
 
-                    if (reply.getReference() == null) continue;
+                if (reply.getReference() == null) continue;
 
-                    if (closest.getGuid() == reply.getReference().getGuid() || reply.getReference().getGuid() == this.message.getSender().getGuid()) {
-                        log.debug("Successor is same: " + closest);
-                        sendReply(closest);
-                        return;
-                    }
-
-                    closest = reply.getReference();
-
-                    if (reply.getReference().getGuid() == context.getGuid()) {
-                        log.debug("The successor is me!");
-                        sendReply(closest);
-                        return;
-                    }
-
-                    log.debug("New closest: " + closest.getGuid());
-                } else {
-                    log.debug("Handshake to peer failed");
+                if (closest.getGuid() == reply.getReference().getGuid() || reply.getReference().getGuid() == this.message.getSender().getGuid()) {
+                    log.debug("Successor is same: " + closest);
+                    sendReply(closest);
                     return;
                 }
+
+                closest = reply.getReference();
+
+                if (reply.getReference().getGuid() == context.getGuid()) {
+                    log.debug("The successor is me!");
+                    sendReply(closest);
+                    return;
+                }
+
+                log.debug("New closest: " + closest.getGuid());
             } catch (IOException e) {
                 log.debug("Could not connect to peer.");
                 return;
@@ -87,7 +82,7 @@ public class LookupOp extends ChordOperation {
         Message message = new LookupReply(context.getReference(), reference.toString().getBytes(StandardCharsets.UTF_8));
 
         try {
-            context.write(this.connection, message.encode());
+            context.send(this.connection, message);
         } catch (IOException e) {
             log.error("Error writing: " + e);
         }

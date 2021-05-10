@@ -28,7 +28,7 @@ public class PredecessorOp extends ChordOperation {
 
         Message message = new PredecessorReply(context.getReference(), predecessor.getBytes(StandardCharsets.UTF_8));
         try {
-            context.write(connection, message.encode());
+            context.send(connection, message);
         } catch (IOException e) {
             e.printStackTrace();
         }
