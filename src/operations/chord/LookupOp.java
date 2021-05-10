@@ -8,9 +8,7 @@ import peer.chord.ChordPeer;
 import peer.chord.ChordReference;
 import peer.ssl.SSLConnection;
 
-import javax.net.ssl.SSLEngine;
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 
 public class LookupOp extends ChordOperation {
@@ -28,58 +26,15 @@ public class LookupOp extends ChordOperation {
 
         if (context.successor() == null) {
             closest = self;
-            sendReply(closest);
-            return;
         } else if (ChordPeer.between(target, self.getGuid(), context.successor().getGuid(), false)) {
             closest = context.successor();
-            sendReply(closest);
-            return;
         } else {
             closest = context.closestPrecedingNode(target);
         }
 
-        while (closest.getGuid() != target) {
-            try {
-                SSLConnection connection = context.connectToPeer(closest.getAddress(), true);
-                Message message = new Lookup(self, String.valueOf(target).getBytes(StandardCharsets.UTF_8));
-                log.debug("Sending Lookup message to: " + closest.getGuid());
-                context.send(connection, message);
-                LookupReply reply = (LookupReply) context.receive(connection);
-                context.closeConnection(connection);
+        log.debug("Sending closest peer: " + closest);
 
-                if (reply.getReference() == null) continue;
-
-                if (closest.getGuid() == reply.getReference().getGuid() || reply.getReference().getGuid() == this.message.getSender().getGuid()) {
-                    log.debug("Successor is same: " + closest);
-                    sendReply(closest);
-                    return;
-                }
-
-                closest = reply.getReference();
-
-                if (reply.getReference().getGuid() == context.getGuid()) {
-                    log.debug("The successor is me!");
-                    sendReply(closest);
-                    return;
-                }
-
-                log.debug("New closest: " + closest.getGuid());
-            } catch (IOException e) {
-                log.debug("Could not connect to peer.");
-                return;
-            } catch (Exception e) {
-                log.error("Could not send message!: " + e + " localized: " + e.getLocalizedMessage());
-                return;
-            }
-        }
-
-        sendReply(closest);
-    }
-
-    private void sendReply(ChordReference reference) {
-        log.debug("Sending closest peer: " + reference);
-
-        Message message = new LookupReply(context.getReference(), reference.toString().getBytes(StandardCharsets.UTF_8));
+        Message message = new LookupReply(context.getReference(), closest.toString().getBytes(StandardCharsets.UTF_8));
 
         try {
             context.send(this.connection, message);

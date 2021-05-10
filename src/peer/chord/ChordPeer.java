@@ -84,6 +84,7 @@ public abstract class ChordPeer extends SSLPeer {
             // wait for GUID message and also Successor
             // GUID task will automatically assign the GUID to the peer
             this.receive(bootPeerConnection).getOperation((Peer) this, bootPeerConnection).run();
+            this.closeConnection(bootPeerConnection);
         } catch (IOException e) {
             log.debug("Could not connect to boot, promoting itself to boot peer: " + e.getMessage() + " localized: " + e.getLocalizedMessage() + " cause: " + e.getCause());
             e.printStackTrace();
@@ -133,35 +134,48 @@ public abstract class ChordPeer extends SSLPeer {
         return String.join("\n", entries);
     }
 
-    public ChordReference findSuccessor(int guid) {
+    public ChordReference findSuccessor(ChordReference closest, int guid) {
         ChordReference self = new ChordReference(this.address, this.guid);
 
-        if (successor() == null) {
-            return self;
-        }
-        if (between(guid, this.guid, successor().getGuid(), false)) {
-            return successor();
+        if (closest.getGuid() == this.guid) {
+            return closest;
         }
 
-        ChordReference closest = closestPrecedingNode(guid);
 
-        try {
-            SSLConnection connection = this.connectToPeer(closest.getAddress(), true);
-            Message message = new Lookup(self, String.valueOf(guid).getBytes(StandardCharsets.UTF_8));
-            this.send(connection, message);
-            LookupReply reply = (LookupReply) this.receive(connection);
-            this.closeConnection(connection);
+        while (closest.getGuid() != guid) {
+            try {
+                SSLConnection connection = this.connectToPeer(closest.getAddress(), true);
+                Message message = new Lookup(self, String.valueOf(guid).getBytes(StandardCharsets.UTF_8));
+                log.debug("Sending Lookup message to: " + closest.getGuid());
+                this.send(connection, message);
+                LookupReply reply = (LookupReply) this.receive(connection);
+                this.closeConnection(connection);
 
-            return reply.getReference();
-        } catch (IOException e) {
-            log.debug("Could not connect to peer");
-            e.printStackTrace();
-            return null;
-        } catch (Exception e) {
-            log.error("Could not send message!");
-            e.printStackTrace();
-            return null;
+                if (reply.getReference() == null) continue;
+
+                if (closest.getGuid() == reply.getReference().getGuid()) {
+                    log.debug("Successor is same: " + closest);
+                    return closest;
+                }
+
+                closest = reply.getReference();
+
+                if (reply.getReference().getGuid() == this.getGuid()) {
+                    log.debug("The successor is me!");
+                    return closest;
+                }
+
+                log.debug("New closest: " + closest.getGuid());
+            } catch (IOException e) {
+                log.debug("Could not connect to peer.");
+                return closest;
+            } catch (Exception e) {
+                log.error("Could not send message!: " + e + " localized: " + e.getLocalizedMessage());
+                return closest;
+            }
         }
+
+        return closest;
     }
 
     public synchronized ChordReference getPredecessor() {
@@ -226,12 +240,7 @@ public abstract class ChordPeer extends SSLPeer {
             int key = this.guid + (int) Math.pow(2, this.nextFinger - 1);
             key = key % Constants.CHORD_MAX_PEERS;
 
-            ChordReference reference = findSuccessor(key);
-            if (reference == null) {
-                log.debug("Something went wrong, successor came null!");
-            } else {
-                this.setFinger(this.nextFinger, findSuccessor(key));
-            }
+            this.setFinger(this.nextFinger, findSuccessor(successor(), key));
         } catch (Exception e) {
             e.printStackTrace();
         }

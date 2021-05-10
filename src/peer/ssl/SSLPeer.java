@@ -7,7 +7,6 @@ import peer.Peer;
 
 import javax.net.ssl.*;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
