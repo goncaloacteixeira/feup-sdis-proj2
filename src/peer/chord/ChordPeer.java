@@ -146,47 +146,29 @@ public abstract class ChordPeer extends SSLPeer {
         return String.join("\n", entries);
     }
 
-    public ChordReference findSuccessor(ChordReference closest, int guid) {
+    public ChordReference findSuccessor(ChordReference target, int guid) {
+        if (target.getGuid() == this.guid) {
+            log.debug("Successor is me: {}", target);
+            return successor();
+        }
+
         ChordReference self = new ChordReference(this.address, this.guid);
-
-        if (closest.getGuid() == this.guid) {
-            return closest;
-        }
-
-        while (closest.getGuid() != guid) {
-            SSLConnection connection = this.connectToPeer(closest.getAddress());
-            Message message = new Lookup(self, String.valueOf(guid).getBytes(StandardCharsets.UTF_8));
-            log.debug("Sending Lookup message to: " + closest.getGuid());
-            this.send(connection, message);
-            LookupReply reply;
-            try {
-                reply = (LookupReply) this.receiveBlocking(connection, 50);
-            } catch (MessageTimeoutException e) {
-                log.debug("Could not receive successor");
-                // try to close connection
-                this.closeConnection(connection);
-                return closest;
-            }
+        SSLConnection connection = this.connectToPeer(target.getAddress());
+        Message message = new Lookup(self, String.valueOf(guid).getBytes(StandardCharsets.UTF_8));
+        log.debug("Sending Lookup message to: {} for {}", target.getGuid(), guid);
+        this.send(connection, message);
+        LookupReply reply;
+        try {
+            reply = (LookupReply) this.receiveBlocking(connection, 50);
+        } catch (MessageTimeoutException e) {
+            log.debug("Could not receive successor");
+            // try to close connection
             this.closeConnection(connection);
-
-            if (reply.getReference() == null) continue;
-
-            if (closest.getGuid() == reply.getReference().getGuid()) {
-                log.debug("Successor is same: " + closest);
-                return closest;
-            }
-
-            closest = reply.getReference();
-
-            if (reply.getReference().getGuid() == this.getGuid() || !reply.keepLooking()) {
-                log.debug("Found successor: " + closest);
-                return closest;
-            }
-
-            log.debug("New closest: " + closest.getGuid());
+            return successor();
         }
 
-        return closest;
+        this.closeConnection(connection);
+        return reply.getReference();
     }
 
     public synchronized ChordReference getPredecessor() {

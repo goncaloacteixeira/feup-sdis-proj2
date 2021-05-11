@@ -8,7 +8,6 @@ import peer.chord.ChordPeer;
 import peer.chord.ChordReference;
 import peer.ssl.SSLConnection;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class LookupOp extends ChordOperation {
@@ -23,22 +22,19 @@ public class LookupOp extends ChordOperation {
         log.debug("Started Lookup for:" + target);
         ChordReference self = context.getReference();
         ChordReference closest;
-        boolean keepLooking = false;
 
         if (context.successor() == null) {
             closest = self;
         } else if (ChordPeer.between(target, self.getGuid(), context.successor().getGuid(), false)) {
             closest = context.successor();
         } else {
-            keepLooking = true;
             closest = context.closestPrecedingNode(target);
+            closest = context.findSuccessor(closest, target);
         }
 
         log.debug("Sending closest peer: " + closest);
 
-        String body = String.format("%s::%s", closest, keepLooking ? "true" : "false");
-
-        Message message = new LookupReply(context.getReference(), body.getBytes(StandardCharsets.UTF_8));
+        Message message = new LookupReply(context.getReference(), closest.toString().getBytes(StandardCharsets.UTF_8));
 
         context.send(this.connection, message);
     }
