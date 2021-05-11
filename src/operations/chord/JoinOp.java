@@ -26,10 +26,6 @@ public class JoinOp extends ChordOperation {
 
         Message message = new Guid(context.getReference(), String.valueOf(guid).getBytes(StandardCharsets.UTF_8));
 
-        try {
-            context.send(connection, message);
-        } catch (IOException e) {
-            log.error("Error writing: " + e);
-        }
+        context.send(connection, message);
     }
 }

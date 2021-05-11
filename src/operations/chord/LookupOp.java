@@ -40,10 +40,6 @@ public class LookupOp extends ChordOperation {
 
         Message message = new LookupReply(context.getReference(), body.getBytes(StandardCharsets.UTF_8));
 
-        try {
-            context.send(this.connection, message);
-        } catch (IOException e) {
-            log.error("Error writing: " + e);
-        }
+        context.send(this.connection, message);
     }
 }

@@ -25,10 +25,6 @@ public class NotificationOp extends ChordOperation {
             context.setPredecessor(reference);
         }
 
-        try {
-            context.closeConnection(connection);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        context.closeConnection(connection);
     }
 }

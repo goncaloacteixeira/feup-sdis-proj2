@@ -7,7 +7,7 @@ import java.nio.channels.SocketChannel;
 public class SSLConnection {
     private final SocketChannel socketChannel;
     private final SSLEngine engine;
-    private boolean handshake;
+    private boolean handshake = false;
     private ByteBuffer appData;
     private ByteBuffer netData;
     private ByteBuffer peerData;
@@ -21,6 +21,20 @@ public class SSLConnection {
         this.netData = netData;
         this.peerData = peerData;
         this.peerNetData = peerNetData;
+    }
+
+    public SSLConnection(SocketChannel socketChannel, SSLEngine engine, ByteBuffer appData, ByteBuffer netData, ByteBuffer peerData, ByteBuffer peerNetData) {
+        this.socketChannel = socketChannel;
+        this.engine = engine;
+        this.appData = appData;
+        this.netData = netData;
+        this.peerData = peerData;
+        this.peerNetData = peerNetData;
+    }
+
+    public SSLConnection(SocketChannel socketChannel, SSLEngine engine) {
+        this.socketChannel = socketChannel;
+        this.engine = engine;
     }
 
     public void setHandshake(boolean handshake) {

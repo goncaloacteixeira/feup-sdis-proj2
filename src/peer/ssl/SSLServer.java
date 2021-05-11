@@ -1,0 +1,166 @@
+package peer.ssl;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLSession;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.nio.channels.spi.SelectorProvider;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+public class SSLServer<M> extends SSLCommunication<M> {
+    private final Logger log = LogManager.getLogger(getClass());
+
+    private ByteBuffer appData;
+    private ByteBuffer netData;
+    private ByteBuffer peerData;
+    private ByteBuffer peerNetData;
+    private InetSocketAddress address;
+    private final Selector selector;
+    private final SSLContext context;
+    private boolean active = false;
+    private final List<SSLPeer> observers = new ArrayList<>();
+
+    public SSLServer(SSLContext context, InetSocketAddress address, Decoder<M> decoder, Encoder<M> encoder) throws IOException {
+        super(decoder, encoder);
+
+        this.context = context;
+        this.address = address;
+
+        // Allocate the server buffers
+        SSLSession dummy = context.createSSLEngine().getSession();
+        appData = ByteBuffer.allocate(dummy.getApplicationBufferSize());
+        netData = ByteBuffer.allocate(dummy.getPacketBufferSize());
+        peerData = ByteBuffer.allocate(dummy.getApplicationBufferSize());
+        peerNetData = ByteBuffer.allocate(dummy.getPacketBufferSize());
+        dummy.invalidate();
+
+        this.selector = SelectorProvider.provider().openSelector();
+        ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+        serverSocketChannel.configureBlocking(false);
+        serverSocketChannel.socket().bind(this.address);
+        // getting the bind address
+        this.address = new InetSocketAddress(serverSocketChannel.socket().getInetAddress(), serverSocketChannel.socket().getLocalPort());
+        serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+
+        this.active = true;
+    }
+
+    public void addObserver(SSLPeer peer) {
+        this.observers.add(peer);
+    }
+
+    public void removeObserver(SSLPeer peer) {
+        this.observers.remove(peer);
+    }
+
+    public void start() {
+        try {
+            this._start();
+        } catch (Exception e) {
+            log.error("Error on start: " + e);
+            e.printStackTrace();
+        }
+    }
+
+    private void _start() throws Exception {
+        log.debug("Online and waiting connections on: {}", this.address);
+
+        while (this.active) {
+            selector.select();
+            Iterator<SelectionKey> selectedKeys = selector.selectedKeys().iterator();
+            while (selectedKeys.hasNext()) {
+                SelectionKey key = selectedKeys.next();
+                selectedKeys.remove();
+                if (!key.isValid()) {
+                    continue;
+                }
+                if (key.isAcceptable()) {
+                    this.accept(key);
+                } else if (key.isReadable()) {
+                    M message = this.receive((SSLConnection) key.attachment());
+
+                    if (message != null) {
+                        this.notify(message, (SSLConnection) key.attachment());
+                    }
+                }
+            }
+        }
+        log.debug("[PEER] Shutdown");
+    }
+
+    private void notify(M message, SSLConnection connection) {
+        for (SSLPeer observer : observers) {
+            observer.handleNotification(message, connection);
+        }
+    }
+
+    public void stop() {
+        log.debug("[PEER] Peer will be closed...");
+        this.active = false;
+        this.selector.wakeup();
+    }
+
+    private void accept(SelectionKey key) throws Exception {
+        log.debug("Received new connection request");
+
+        SocketChannel socketChannel = ((ServerSocketChannel) key.channel()).accept();
+        socketChannel.configureBlocking(false);
+
+        log.debug("Connected on: {}", socketChannel);
+
+        SSLEngine engine = this.context.createSSLEngine();
+        engine.setUseClientMode(false);
+        engine.setNeedClientAuth(true);
+
+        SSLConnection connection = new SSLConnection(socketChannel, engine, appData, netData, peerData, peerNetData);
+
+        engine.beginHandshake();
+
+        connection.setHandshake(this.doHandshake(connection));
+        socketChannel.register(this.selector, SelectionKey.OP_READ, connection);
+    }
+
+    @Override
+    M receive(SSLConnection connection) throws Exception {
+        M message = super.receive(connection);
+
+        // update buffers (they might have been replaced)
+        this.appData = connection.getAppData();
+        this.netData = connection.getNetData();
+        this.peerData = connection.getPeerData();
+        this.peerNetData = connection.getPeerNetData();
+
+        return message;
+    }
+
+    @Override
+    public void send(SSLConnection connection, M message) throws IOException {
+        super.send(connection, message);
+
+        this.appData = connection.getAppData();
+        this.netData = connection.getNetData();
+        this.peerData = connection.getPeerData();
+        this.peerNetData = connection.getPeerNetData();
+    }
+
+    @Override
+    protected boolean doHandshake(SSLConnection connection) throws IOException {
+        boolean result = super.doHandshake(connection);
+
+        this.peerData = connection.getPeerData();
+        this.peerNetData = connection.getPeerNetData();
+
+        return result;
+    }
+}
