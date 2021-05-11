@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import peer.Constants;
 import peer.Peer;
+import peer.ssl.MessageTimeoutException;
 import peer.ssl.SSLConnection;
 import peer.ssl.SSLPeer;
 
@@ -15,9 +16,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public abstract class ChordPeer extends SSLPeer {
     private final static Logger log = LogManager.getLogger(ChordPeer.class);
@@ -28,6 +27,7 @@ public abstract class ChordPeer extends SSLPeer {
     protected ChordReference predecessor;
     protected ChordReference[] routingTable = new ChordReference[Constants.M_BIT];
     protected ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(2);
+    protected ExecutorService executorService = Executors.newFixedThreadPool(16);
     private int nextFinger = 1;
 
     public ChordPeer(InetSocketAddress address, boolean boot) throws Exception {
@@ -37,8 +37,8 @@ public abstract class ChordPeer extends SSLPeer {
     }
 
     protected void startPeriodicChecks() {
-        scheduler.scheduleAtFixedRate(this::fixFingers, 5, 2, TimeUnit.SECONDS);
-        scheduler.scheduleAtFixedRate(this::stabilize, 10, 6, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(this::fixFingers, 1, 10, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(this::stabilize, 3, 15, TimeUnit.SECONDS);
     }
 
     public synchronized ChordReference successor() {
@@ -65,30 +65,46 @@ public abstract class ChordPeer extends SSLPeer {
         return bootPeer;
     }
 
-    public void join() {
+    public boolean join() {
         if (this.boot) {
             this.guid = generateNewKey(this.address);
             this.setSuccessor(new ChordReference(this.address, this.guid));
             log.debug("Peer was started as boot, assigning GUID:" + this.guid);
-            return;
+            return true;
         }
         log.debug("Trying to join the CHORD circle on: " + this.bootPeer);
 
-        SSLConnection bootPeerConnection = this.connectToPeer(bootPeer.getAddress(), true);
+        SSLConnection bootPeerConnection = this.connectToPeer(bootPeer.getAddress());
         if (bootPeerConnection == null) {
             log.error("Aborting join operation...");
-            return;
+            return false;
         }
 
         ChordReference self = new ChordReference(this.address, this.guid);
 
         Message message = new Join(self);
+
         // send join
         this.send(bootPeerConnection, message);
+
         // wait for GUID message and also Successor
         // GUID task will automatically assign the GUID to the peer
-        this.receive(bootPeerConnection).getOperation((Peer) this, bootPeerConnection).run();
+        Message reply;
+        try {
+            reply = this.receiveBlocking(bootPeerConnection, 50);
+        } catch (MessageTimeoutException e) {
+            log.error("Could not receive message, aborting");
+            // try to close connection
+            this.closeConnection(bootPeerConnection);
+            return false;
+        }
+
+        this.setSuccessor(bootPeer);
+        reply.getOperation((Peer) this, bootPeerConnection).run();
+        executorService.submit(() -> this.findSuccessor(bootPeer, this.guid));
+
         this.closeConnection(bootPeerConnection);
+        return true;
     }
 
     public static int generateNewKey(InetSocketAddress address) {
@@ -138,11 +154,19 @@ public abstract class ChordPeer extends SSLPeer {
         }
 
         while (closest.getGuid() != guid) {
-            SSLConnection connection = this.connectToPeer(closest.getAddress(), true);
+            SSLConnection connection = this.connectToPeer(closest.getAddress());
             Message message = new Lookup(self, String.valueOf(guid).getBytes(StandardCharsets.UTF_8));
             log.debug("Sending Lookup message to: " + closest.getGuid());
             this.send(connection, message);
-            LookupReply reply = (LookupReply) this.receive(connection);
+            LookupReply reply;
+            try {
+                reply = (LookupReply) this.receiveBlocking(connection, 50);
+            } catch (MessageTimeoutException e) {
+                log.debug("Could not receive successor");
+                // try to close connection
+                this.closeConnection(connection);
+                return closest;
+            }
             this.closeConnection(connection);
 
             if (reply.getReference() == null) continue;
@@ -181,11 +205,19 @@ public abstract class ChordPeer extends SSLPeer {
             return this.predecessor;
         }
 
-        SSLConnection connection = this.connectToPeer(successor().getAddress(), true);
+        SSLConnection connection = this.connectToPeer(successor().getAddress());
         ChordReference self = new ChordReference(this.address, this.guid);
         Message message = new Predecessor(self);
         this.send(connection, message);
-        PredecessorReply reply = (PredecessorReply) this.receive(connection);
+        PredecessorReply reply;
+        try {
+            reply = (PredecessorReply) this.receiveBlocking(connection, 50);
+        } catch (MessageTimeoutException e) {
+            log.debug("Could not receive predecessor!");
+            // try to close connection
+            this.closeConnection(connection);
+            return this.predecessor;
+        }
         this.closeConnection(connection);
         log.debug("Predecessor found: " + reply.getPredecessor());
 
@@ -242,7 +274,7 @@ public abstract class ChordPeer extends SSLPeer {
             return;
         }
 
-        SSLConnection connection = this.connectToPeer(reference.getAddress(), true);
+        SSLConnection connection = this.connectToPeer(reference.getAddress());
         ChordReference self = new ChordReference(this.address, this.guid);
         Message message = new Notification(self, context.toString().getBytes(StandardCharsets.UTF_8));
         this.send(connection, message);

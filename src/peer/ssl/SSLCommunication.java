@@ -18,15 +18,17 @@ public class SSLCommunication<M> {
     private final Logger log = LogManager.getLogger(SSLCommunication.class);
     private final Decoder<M> decoder;
     private final Encoder<M> encoder;
+    private final Sizer<M> sizer;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    public SSLCommunication(Decoder<M> decoder, Encoder<M> encoder) {
+    public SSLCommunication(Decoder<M> decoder, Encoder<M> encoder, Sizer<M> sizer) {
         this.decoder = decoder;
         this.encoder = encoder;
+        this.sizer = sizer;
     }
 
     M receive(SSLConnection connection) throws Exception {
-        log.debug("[PEER] Reading data...");
+        log.debug("Reading data...");
 
         SSLEngine engine = connection.getEngine();
 
@@ -83,6 +85,7 @@ public class SSLCommunication<M> {
 
         SSLEngine engine = connection.getEngine();
 
+        connection.setAppData(ByteBuffer.allocate(sizer.size(message)));
         connection.getAppData().clear();
         encoder.encode(message, connection.getAppData());
         connection.getAppData().flip();
@@ -233,9 +236,6 @@ public class SSLCommunication<M> {
                     }
                     handshakeStatus = engine.getHandshakeStatus();
                     break;
-                case FINISHED:
-                case NOT_HANDSHAKING:
-                    return true;
                 default:
                     throw new IllegalStateException("Invalid SSL Status: " + handshakeStatus);
             }

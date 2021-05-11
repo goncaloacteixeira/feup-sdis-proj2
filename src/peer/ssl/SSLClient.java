@@ -3,29 +3,31 @@ package peer.ssl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.net.ssl.*;
-import java.io.FileInputStream;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.security.KeyStore;
-import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Random;
 
 public class SSLClient<M> extends SSLCommunication<M> {
     public static final Logger log = LogManager.getLogger(SSLClient.class);
 
     private final SSLContext context;
 
-    public SSLClient(SSLContext context, Decoder<M> decoder, Encoder<M> encoder) {
-        super(decoder, encoder);
+    public SSLClient(SSLContext context, Decoder<M> decoder, Encoder<M> encoder, Sizer<M> sizer) {
+        super(decoder, encoder, sizer);
         this.context = context;
     }
 
-    public SSLConnection connectToPeer(InetSocketAddress socketAddress, boolean blocking) throws IOException {
+    public synchronized SSLConnection connectToPeer(InetSocketAddress socketAddress) throws IOException {
+        try {
+            Thread.sleep(new Random().nextInt(1000));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         SSLEngine engine = context.createSSLEngine(socketAddress.getAddress().getHostAddress(), socketAddress.getPort());
         engine.setUseClientMode(true);
 
@@ -35,7 +37,7 @@ public class SSLClient<M> extends SSLCommunication<M> {
         ByteBuffer peerNetData = ByteBuffer.allocate(engine.getSession().getPacketBufferSize());
 
         SocketChannel socketChannel = SocketChannel.open();
-        socketChannel.configureBlocking(blocking);
+        socketChannel.configureBlocking(false);
         socketChannel.connect(socketAddress);
 
         SSLConnection connection = new SSLConnection(socketChannel, engine, false, appData, netData, peerData, peerNetData);

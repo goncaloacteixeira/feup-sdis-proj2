@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
@@ -20,7 +21,7 @@ public abstract class SSLPeer {
 
     protected InetSocketAddress address;
     private final SSLContext context;
-    private final ExecutorService executor = Executors.newFixedThreadPool(8);
+    private final ExecutorService executor = Executors.newFixedThreadPool(4);
     private final SSLServer<Message> server;
     private final SSLClient<Message> client;
 
@@ -42,6 +43,10 @@ public abstract class SSLPeer {
         byteBuffer.put(message.encode());
     }
 
+    private static int sizer(Message message) {
+        return message.encode().length;
+    }
+
     public SSLPeer(InetSocketAddress bootAddress, boolean boot) throws Exception {
         if (boot) {
             this.address = bootAddress;
@@ -55,16 +60,18 @@ public abstract class SSLPeer {
                 SSLCommunication.createTrustManager("resources/truststore.jks", "sdisg27"),
                 new SecureRandom());
 
-        this.server = new SSLServer<>(context, this.address, SSLPeer::decode, SSLPeer::encode);
-        this.client = new SSLClient<>(context, SSLPeer::decode, SSLPeer::encode);
+        this.server = new SSLServer<>(context, this.address, SSLPeer::decode, SSLPeer::encode, SSLPeer::sizer);
+        this.client = new SSLClient<>(context, SSLPeer::decode, SSLPeer::encode, SSLPeer::sizer);
 
+        this.address = this.server.getAddress();
         this.server.addObserver(this);
         new Thread(this.server::start).start();
     }
 
-    public SSLConnection connectToPeer(InetSocketAddress address, boolean blocking) {
+    public synchronized SSLConnection connectToPeer(InetSocketAddress address) {
         try {
-            return this.client.connectToPeer(address, blocking);
+            log.debug("Connecting to peer: " + address);
+            return this.client.connectToPeer(address);
         } catch (IOException e) {
             log.trace("Could not connect to peer {}, exception: {}", address, e.getMessage());
         }
@@ -90,7 +97,26 @@ public abstract class SSLPeer {
         return null;
     }
 
+    public Message receiveBlocking(SSLConnection connection, int timeToRead) throws MessageTimeoutException {
+        Message reply;
+        int attempt = 0;
+        while ((reply = this.receive(connection)) == null && attempt < 50) {
+            attempt++;
+            try {
+                Thread.sleep(timeToRead * 3L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if (reply == null) {
+            throw new MessageTimeoutException("Message took too long to receive!");
+        }
+
+        return reply;
+    }
+
     public void handleNotification(Object message, SSLConnection connection) {
+        // ((Message) message).getOperation((Peer) this, connection).run();
         executor.submit(((Message) message).getOperation((Peer) this, connection));
     }
 

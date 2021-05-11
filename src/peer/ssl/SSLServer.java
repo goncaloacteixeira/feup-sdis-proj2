@@ -31,8 +31,8 @@ public class SSLServer<M> extends SSLCommunication<M> {
     private boolean active = false;
     private final List<SSLPeer> observers = new ArrayList<>();
 
-    public SSLServer(SSLContext context, InetSocketAddress address, Decoder<M> decoder, Encoder<M> encoder) throws IOException {
-        super(decoder, encoder);
+    public SSLServer(SSLContext context, InetSocketAddress address, Decoder<M> decoder, Encoder<M> encoder, Sizer<M> sizer) throws IOException {
+        super(decoder, encoder, sizer);
 
         this.context = context;
         this.address = address;
@@ -54,6 +54,10 @@ public class SSLServer<M> extends SSLCommunication<M> {
         serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
 
         this.active = true;
+    }
+
+    public InetSocketAddress getAddress() {
+        return address;
     }
 
     public void addObserver(SSLPeer peer) {
