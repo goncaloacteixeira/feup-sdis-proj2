@@ -146,6 +146,22 @@ public abstract class ChordPeer extends SSLPeer {
         return String.join("\n", entries);
     }
 
+    public ChordReference findSuccessor(int guid) {
+        ChordReference target;
+        ChordReference self = new ChordReference(this.address, this.guid);
+
+        if (this.successor() == null) {
+            target = self;
+        } else if (ChordPeer.between(guid, self.getGuid(), this.successor().getGuid(), false)) {
+            target = this.successor();
+        } else {
+            target = this.closestPrecedingNode(guid);
+            target = this.findSuccessor(target, guid);
+        }
+
+        return target;
+    }
+
     public ChordReference findSuccessor(ChordReference target, int guid) {
         if (target.getGuid() == this.guid) {
             log.debug("Successor is me: {}", target);

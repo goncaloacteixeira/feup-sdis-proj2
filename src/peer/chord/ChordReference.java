@@ -3,13 +3,14 @@ package peer.chord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ChordReference {
+public class ChordReference implements Serializable {
     private static final Logger log = LogManager.getLogger(ChordReference.class);
     private InetSocketAddress address;
     private int guid;
