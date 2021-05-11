@@ -141,7 +141,6 @@ public abstract class ChordPeer extends SSLPeer {
             return closest;
         }
 
-
         while (closest.getGuid() != guid) {
             try {
                 SSLConnection connection = this.connectToPeer(closest.getAddress(), true);
@@ -160,8 +159,8 @@ public abstract class ChordPeer extends SSLPeer {
 
                 closest = reply.getReference();
 
-                if (reply.getReference().getGuid() == this.getGuid()) {
-                    log.debug("The successor is me!");
+                if (reply.getReference().getGuid() == this.getGuid() || !reply.keepLooking()) {
+                    log.debug("Found successor: " + closest);
                     return closest;
                 }
 
@@ -228,7 +227,7 @@ public abstract class ChordPeer extends SSLPeer {
                 this.setSuccessor(predecessor);
             }
         }
-        /* FIXME - notifications are buggy -> probably SSL Peer is poorly implemented */
+
         if (successor().getGuid() != this.guid)
             this.notifyPeer(successor(), new ChordReference(this.address, this.guid));
 
@@ -268,7 +267,6 @@ public abstract class ChordPeer extends SSLPeer {
             ChordReference self = new ChordReference(this.address, this.guid);
             Message message = new Notification(self, context.toString().getBytes(StandardCharsets.UTF_8));
             this.send(connection, message);
-            this.closeConnection(connection);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {

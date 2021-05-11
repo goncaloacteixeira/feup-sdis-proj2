@@ -22,7 +22,7 @@ public abstract class SSLClient<M> {
 
     private final Decoder<M> decoder;
     private final Encoder<M> encoder;
-    protected ExecutorService executor = Executors.newFixedThreadPool(16);
+    protected ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public SSLClient(Decoder<M> decoder, Encoder<M> encoder) {
         this.decoder = decoder;
@@ -142,7 +142,6 @@ public abstract class SSLClient<M> {
         }
 
         log.debug("Connected to Peer on: " + socketAddress);
-        log.debug("Channel: " + socketChannel);
         return connection;
     }
 
@@ -162,13 +161,16 @@ public abstract class SSLClient<M> {
         SocketChannel socketChannel = connection.getSocketChannel();
 
         int appBufferSize = engine.getSession().getApplicationBufferSize();
-        ByteBuffer applicationData = ByteBuffer.allocate(appBufferSize);
-        ByteBuffer peerApplicationData = ByteBuffer.allocate(appBufferSize);
+        ByteBuffer netData = ByteBuffer.allocate(appBufferSize);
+        ByteBuffer appData = ByteBuffer.allocate(appBufferSize);
         connection.getNetData().clear();
         connection.getPeerNetData().clear();
 
         handshakeStatus = engine.getHandshakeStatus();
         while (handshakeStatus != SSLEngineResult.HandshakeStatus.FINISHED && handshakeStatus != SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING) {
+
+            log.trace("HSS: {}", handshakeStatus);
+
             switch (handshakeStatus) {
                 case NEED_UNWRAP:
                     if (socketChannel.read(connection.getPeerNetData()) < 0) {
@@ -186,10 +188,11 @@ public abstract class SSLClient<M> {
                     }
                     connection.getPeerNetData().flip();
                     try {
-                        do {
-                            result = engine.unwrap(connection.getPeerNetData(), peerApplicationData);
-                        } while (connection.getPeerNetData().hasRemaining() || result.bytesProduced() > 0);
-
+                        result = engine.unwrap(connection.getPeerNetData(), connection.getPeerData());
+                        /*do {
+                            result = engine.unwrap(connection.getPeerNetData(), connection.getPeerData());
+                        } while (connection.getPeerNetData().hasRemaining() || result.bytesProduced() > 0);*/
+                        log.trace("After unwrap: {}", result);
                         connection.getPeerNetData().compact();
                         handshakeStatus = result.getHandshakeStatus();
                     } catch (SSLException e) {
@@ -202,7 +205,7 @@ public abstract class SSLClient<M> {
                         case OK:
                             break;
                         case BUFFER_OVERFLOW:
-                            peerApplicationData = enlargeApplicationBuffer(engine, peerApplicationData);
+                            connection.setPeerData(enlargeApplicationBuffer(engine, connection.getPeerData()));
                             break;
                         case BUFFER_UNDERFLOW:
                             connection.setPeerNetData(handleBufferUnderflow(engine, connection.getPeerNetData()));
@@ -220,9 +223,9 @@ public abstract class SSLClient<M> {
                     }
                     break;
                 case NEED_WRAP:
-                    connection.getNetData().clear();
+                    netData.clear();
                     try {
-                        result = engine.wrap(applicationData, connection.getNetData());
+                        result = engine.wrap(appData, netData);
                         handshakeStatus = result.getHandshakeStatus();
                     } catch (SSLException e) {
                         log.error("Error processing data, will try to close gracefully: " + e + " localized: " + e.getLocalizedMessage() + " cause: " + e.getCause());
@@ -232,19 +235,19 @@ public abstract class SSLClient<M> {
                     }
                     switch (result.getStatus()) {
                         case OK:
-                            connection.getNetData().flip();
-                            while (connection.getNetData().hasRemaining()) {
-                                socketChannel.write(connection.getNetData());
+                            netData.flip();
+                            while (netData.hasRemaining()) {
+                                socketChannel.write(netData);
                             }
                             break;
                         case BUFFER_OVERFLOW:
-                            connection.setNetData(enlargePacketBuffer(engine, connection.getNetData()));
+                            netData = enlargePacketBuffer(engine, netData);
                             break;
                         case CLOSED:
                             try {
-                                connection.getNetData().flip();
-                                while (connection.getNetData().hasRemaining()) {
-                                    socketChannel.write(connection.getNetData());
+                                netData.flip();
+                                while (netData.hasRemaining()) {
+                                    socketChannel.write(netData);
                                 }
                                 connection.getPeerNetData().clear();
                             } catch (Exception e) {
@@ -259,13 +262,13 @@ public abstract class SSLClient<M> {
                 case NEED_TASK:
                     Runnable task;
                     while ((task = engine.getDelegatedTask()) != null) {
-                        executor.execute(task);
+                        executor.submit(task);
                     }
                     handshakeStatus = engine.getHandshakeStatus();
                     break;
                 case FINISHED:
                 case NOT_HANDSHAKING:
-                    break;
+                    return true;
                 default:
                     throw new IllegalStateException("Invalid SSL Status: " + handshakeStatus);
             }

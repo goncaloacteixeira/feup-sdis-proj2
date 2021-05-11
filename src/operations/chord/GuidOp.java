@@ -20,6 +20,7 @@ public class GuidOp extends ChordOperation {
 
         log.debug("Getting successor from peer: " + message.getSender().getGuid());
 
-        context.setSuccessor(context.findSuccessor(message.getSender(), context.getGuid()));
+        context.setSuccessor(message.getSender());
+        // context.setSuccessor(context.findSuccessor(message.getSender(), context.getGuid()));
     }
 }

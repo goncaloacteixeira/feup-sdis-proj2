@@ -32,6 +32,10 @@ public abstract class SSLPeer extends SSLClient<Message> {
     private final SSLContext context;
     private final Selector selector;
     protected ExecutorService executor = Executors.newFixedThreadPool(16);
+    private ByteBuffer appData;
+    private ByteBuffer netData;
+    private ByteBuffer peerData;
+    private ByteBuffer peerNetData;
 
     private static Message decode(ByteBuffer byteBuffer) {
         byte[] buffer;
@@ -66,6 +70,14 @@ public abstract class SSLPeer extends SSLClient<Message> {
                 this.createTrustManager("resources/truststore.jks", "sdisg27"),
                 new SecureRandom());
 
+        SSLSession dummy = context.createSSLEngine().getSession();
+        appData = ByteBuffer.allocate(dummy.getApplicationBufferSize());
+        netData = ByteBuffer.allocate(dummy.getPacketBufferSize());
+        peerData = ByteBuffer.allocate(dummy.getApplicationBufferSize());
+        peerNetData = ByteBuffer.allocate(dummy.getPacketBufferSize());
+        dummy.invalidate();
+
+
         this.selector = SelectorProvider.provider().openSelector();
         ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.configureBlocking(false);
@@ -91,11 +103,6 @@ public abstract class SSLPeer extends SSLClient<Message> {
         SSLEngine engine = this.context.createSSLEngine();
         engine.setUseClientMode(false);
         engine.setNeedClientAuth(true);
-
-        ByteBuffer appData = ByteBuffer.allocate(engine.getSession().getApplicationBufferSize());
-        ByteBuffer netData = ByteBuffer.allocate(engine.getSession().getPacketBufferSize());
-        ByteBuffer peerData = ByteBuffer.allocate(engine.getSession().getApplicationBufferSize());
-        ByteBuffer peerNetData = ByteBuffer.allocate(engine.getSession().getPacketBufferSize());
 
         SSLConnection connection = new SSLConnection(socketChannel, engine, false, appData, netData, peerData, peerNetData);
 
