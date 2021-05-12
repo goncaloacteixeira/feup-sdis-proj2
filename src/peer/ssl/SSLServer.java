@@ -78,7 +78,7 @@ public class SSLServer<M> extends SSLCommunication<M> {
     }
 
     private void _start() throws Exception {
-        log.debug("Online and waiting connections on: {}", this.address);
+        log.info("Online and waiting connections on: {}", this.address);
 
         while (this.active) {
             selector.select();

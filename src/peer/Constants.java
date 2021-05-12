@@ -1,5 +1,7 @@
 package peer;
 
+import org.apache.logging.log4j.Level;
+
 /**
  * Constants used on this Peer
  */
