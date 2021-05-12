@@ -96,6 +96,7 @@ public class Peer extends ChordPeer implements RemoteInterface {
             log.info("Receiving ACK...");
             message = this.receiveBlocking(connection, 2000);
             if (!(message instanceof Ack)) return;
+            log.info("Received ACK!");
             this.closeConnection(connection);
         } catch (IOException | MessageTimeoutException e) {
             e.printStackTrace();

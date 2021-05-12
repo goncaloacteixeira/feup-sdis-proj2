@@ -20,7 +20,7 @@ public class TestApp {
         }
 
         try {
-            stub.backup("teste.vdsx");
+            stub.backup("teste.iso");
             //System.out.println(stub.chord());
         } catch (Exception e) {
             e.printStackTrace();

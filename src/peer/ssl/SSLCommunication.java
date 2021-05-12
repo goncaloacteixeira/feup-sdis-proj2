@@ -2,6 +2,7 @@ package peer.ssl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import peer.Constants;
 
 import javax.net.ssl.*;
 import java.io.File;
@@ -9,7 +10,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
 import java.security.KeyStore;
 import java.util.Arrays;
@@ -247,16 +250,14 @@ public class SSLCommunication<M> {
     }
 
     protected void sendFile(SSLConnection connection, FileChannel fileChannel) throws IOException, InterruptedException {
-        log.info("Sending File...");
-
         SSLEngine engine = connection.getEngine();
         System.out.println("Protocol: " + engine.getApplicationProtocol());
 
-        connection.setAppData(ByteBuffer.allocate(10 * 1024));
+        connection.setAppData(ByteBuffer.allocate(Constants.CHUNK_SIZE));
         int bytesRead = fileChannel.read(connection.getAppData());
 
         while (bytesRead != -1) {
-            log.info("Bytes read from file: {}", bytesRead);
+            log.debug("Bytes read from file: {}", bytesRead);
             connection.getAppData().flip();
             while (connection.getAppData().hasRemaining()) {
                 connection.getNetData().clear();
@@ -268,7 +269,7 @@ public class SSLCommunication<M> {
                         while (connection.getNetData().hasRemaining()) {
                             bytesWritten += connection.getSocketChannel().write(connection.getNetData());
                         }
-                        log.info("Bytes written to socket: {}", bytesWritten);
+                        log.debug("Bytes written to socket: {}", bytesWritten);
                         break;
                     case BUFFER_OVERFLOW:
                         connection.setNetData(enlargePacketBuffer(engine, connection.getNetData()));
@@ -286,34 +287,48 @@ public class SSLCommunication<M> {
     }
 
     protected int receiveFile(SSLConnection connection, FileChannel fileChannel) throws IOException {
-        log.info("Receiving file...");
-
         SSLEngine engine = connection.getEngine();
 
         connection.getPeerNetData().clear();
-        int bytesRead = connection.getSocketChannel().read(connection.getPeerNetData());
+        connection.getSocketChannel().socket().setSoTimeout(1000);
+        ReadableByteChannel byteChannel = Channels.newChannel(connection.getSocketChannel().socket().getInputStream());
 
-        log.info("Bytes read from socket: {}", bytesRead);
+        int bytesRead = 0;
+        do {
+            int read;
+            try {
+                read = byteChannel.read(connection.getPeerNetData());
+            } catch (Exception e) {
+                log.debug("Reached last chunk");
+                break;
+            }
+            log.debug("Read in single read: {}", read);
+            bytesRead += read;
+        } while (bytesRead % Constants.TLS_CHUNK_SIZE != 0);
+
+        connection.getPeerNetData().flip();
+
+        log.debug("Bytes read from socket: {}", bytesRead);
+
+        int bytesConsumed = 0;
+
+        ByteBuffer aux;
 
         if (bytesRead > 0) {
-            connection.getPeerNetData().flip();
-
             int bytesWritten = 0;
-            while (connection.getPeerNetData().hasRemaining()) {
-                log.info("Before unwrap: {}", connection.getPeerNetData());
+            while (bytesConsumed != bytesRead) {
                 connection.getPeerData().clear();
-                int oldLimit = connection.getPeerNetData().limit();
-                connection.getPeerNetData().limit(16709);
-                SSLEngineResult result = engine.unwrap(connection.getPeerNetData(), connection.getPeerData());
-                log.info("After unwrap: {}", connection.getPeerNetData());
-                connection.getPeerNetData().limit(oldLimit);
-                connection.getPeerNetData().compact();
+                byte[] sub = new byte[Math.min(Constants.TLS_CHUNK_SIZE, bytesRead - bytesConsumed)];
+                connection.getPeerNetData().get(sub, 0, Math.min(Constants.TLS_CHUNK_SIZE, bytesRead - bytesConsumed));
+                aux = ByteBuffer.wrap(sub);
+
+                SSLEngineResult result = engine.unwrap(aux, connection.getPeerData());
+                bytesConsumed += result.bytesConsumed();
 
                 switch (result.getStatus()) {
                     case OK:
                         connection.getPeerData().flip();
                         bytesWritten += fileChannel.write(connection.getPeerData());
-                        log.info("After write: {}", connection.getPeerNetData());
                         break;
                     case BUFFER_OVERFLOW:
                         connection.setPeerData(this.enlargeApplicationBuffer(engine, connection.getPeerData()));
@@ -324,15 +339,13 @@ public class SSLCommunication<M> {
                     case CLOSED:
                         log.debug("The other peer requests closing the connection");
                         this.closeConnection(connection);
-                        // connection.getEngine().closeOutbound();
-                        // connection.getSocketChannel().close();
                         log.debug("Connection closed!");
                         return -1;
                     default:
                         throw new IllegalStateException("Invalid SSL Status: " + result.getStatus());
                 }
             }
-            log.info("wrote: {}", bytesWritten);
+            log.debug("Wrote packet: {}", bytesWritten);
             return bytesWritten;
         } else if (bytesRead < 0) {
             log.error("Received EOS. Trying to close connection...");

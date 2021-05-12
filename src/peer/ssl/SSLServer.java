@@ -74,7 +74,6 @@ public class SSLServer<M> extends SSLCommunication<M> {
             this._start();
         } catch (Exception e) {
             log.error("Error on start: " + e);
-            e.printStackTrace();
         }
     }
 

@@ -4,7 +4,9 @@ import messages.application.Ack;
 import messages.application.ApplicationMessage;
 import messages.application.Backup;
 import operations.chord.ChordOperation;
+import peer.Constants;
 import peer.Peer;
+import peer.Utils;
 import peer.chord.ChordReference;
 import peer.ssl.SSLConnection;
 
@@ -12,6 +14,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 public class BackupOp extends AppOperation {
@@ -25,7 +28,7 @@ public class BackupOp extends AppOperation {
         ChordReference owner = ((Backup) message).getOwner();
         long size = ((Backup) message).getSize();
 
-        log.info("Staring backup on fileId: {} for owner: {} with size: {} byte", fileId, owner, size);
+        log.info("Staring backup on fileId: {} for owner: {} with size: {}", fileId, owner, Utils.prettySize(size));
 
         File file = new File(fileId);
         try {
@@ -33,11 +36,12 @@ public class BackupOp extends AppOperation {
             FileChannel fileChannel = outputStream.getChannel();
             log.info("Ready to receive file...");
             context.send(this.connection, new Ack(this.context.getReference()));
+            connection.setPeerNetData(ByteBuffer.allocate(Constants.TLS_CHUNK_SIZE));
             connection.getSocketChannel().configureBlocking(true);
             context.receiveFile(connection, fileChannel, ((Backup) this.message).getSize());
             fileChannel.close();
             log.info("Received file!");
-            log.info("Sending Ack to client so they can close connection");
+            log.info("Sending ACK to client so they can close connection");
             context.send(this.connection, new Ack(this.context.getReference()));
         } catch (IOException e) {
             e.printStackTrace();

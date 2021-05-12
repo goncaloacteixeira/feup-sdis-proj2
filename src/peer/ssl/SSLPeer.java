@@ -3,7 +3,9 @@ package peer.ssl;
 import messages.Message;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import peer.Constants;
 import peer.Peer;
+import peer.Utils;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
@@ -118,14 +120,22 @@ public abstract class SSLPeer {
 
     public void receiveFile(SSLConnection connection, FileChannel fileChannel, long size) {
         try {
-            int total = 0;
-            connection.setPeerData(ByteBuffer.allocate(10 * 1024));
+            final long started = System.currentTimeMillis();
+
+            long total = 0;
+            connection.setPeerData(ByteBuffer.allocate(Constants.CHUNK_SIZE));
             while (true) {
-                int bytes;
-                while ((bytes = this.client.receiveFile(connection, fileChannel)) == 0);
+                long bytes;
+                bytes = this.client.receiveFile(connection, fileChannel);
                 total += bytes;
 
+                System.out.printf("Receiving (%s): %s (%s)\r",
+                        Utils.prettySize(size),
+                        Utils.progressBar(total, size),
+                        Utils.rate(started, System.currentTimeMillis(), total)
+                );
                 if (bytes < 0 || total == size) {
+                    System.out.printf("Received (%s): %s\n",  Utils.prettySize(size), Utils.progressBar(total, size));
                     return;
                 }
             }
