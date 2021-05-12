@@ -9,4 +9,6 @@ public interface RemoteInterface extends Remote {
     String chord() throws RemoteException;
 
     ChordReference findSuccessor(int guid) throws RemoteException;
+
+    void backup(String filename) throws RemoteException;
 }

@@ -1,5 +1,6 @@
 package peer.ssl;
 
+import messages.application.Backup;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -95,7 +96,7 @@ public class SSLServer<M> extends SSLCommunication<M> {
                     M message = this.receive((SSLConnection) key.attachment());
 
                     if (message != null) {
-                        this.notify(message, (SSLConnection) key.attachment());
+                        this.notify(message, (SSLConnection) key.attachment(), key);
                     }
                 }
             }
@@ -103,8 +104,11 @@ public class SSLServer<M> extends SSLCommunication<M> {
         log.debug("[PEER] Shutdown");
     }
 
-    private void notify(M message, SSLConnection connection) {
+    private void notify(M message, SSLConnection connection, SelectionKey key) {
         for (SSLPeer observer : observers) {
+            if (message instanceof Backup) {
+                key.cancel();
+            }
             observer.handleNotification(message, connection);
         }
     }
@@ -126,6 +130,11 @@ public class SSLServer<M> extends SSLCommunication<M> {
         SSLEngine engine = this.context.createSSLEngine();
         engine.setUseClientMode(false);
         engine.setNeedClientAuth(true);
+
+        ByteBuffer appData = ByteBuffer.allocate(engine.getSession().getApplicationBufferSize());
+        ByteBuffer netData = ByteBuffer.allocate(engine.getSession().getPacketBufferSize());
+        ByteBuffer peerData = ByteBuffer.allocate(engine.getSession().getApplicationBufferSize());
+        ByteBuffer peerNetData = ByteBuffer.allocate(engine.getSession().getPacketBufferSize());
 
         SSLConnection connection = new SSLConnection(socketChannel, engine, appData, netData, peerData, peerNetData);
 

@@ -20,7 +20,8 @@ public class TestApp {
         }
 
         try {
-            System.out.println(stub.findSuccessor(150));
+            stub.backup("teste.vdsx");
+            //System.out.println(stub.chord());
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,16 +1,31 @@
 package peer;
 
+import messages.Message;
+import messages.application.Ack;
+import messages.application.Backup;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import peer.chord.ChordPeer;
 import peer.chord.ChordReference;
+import peer.ssl.MessageTimeoutException;
+import peer.ssl.SSLConnection;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -55,6 +70,36 @@ public class Peer extends ChordPeer implements RemoteInterface {
     public Peer(InetSocketAddress address, boolean boot, String sap) throws Exception {
         super(address, boot);
         this.sap = sap;
+    }
+
+    public void backup(String filename) {
+        File file = new File(filename);
+        BasicFileAttributes attributes;
+        try {
+            attributes = Files.getFileAttributeView(file.toPath(), BasicFileAttributeView.class).readAttributes();
+            long size = attributes.size();
+
+            String body = String.join("::", Arrays.asList("test", String.valueOf(size), this.getReference().toString()));
+
+            log.info("Starting Backup request...");
+            SSLConnection connection = this.connectToPeer(successor().getAddress());
+            this.send(connection, new Backup(this.getReference(), body.getBytes(StandardCharsets.UTF_8)));
+            log.info("Receiving ACK...");
+            Message message = this.receiveBlocking(connection, 100);
+            if (!(message instanceof Ack)) return;
+
+            FileChannel fileChannel = FileChannel.open(file.toPath());
+            log.info("Sending file...");
+            this.sendFile(connection, fileChannel);
+            log.info("File sent!");
+
+            log.info("Receiving ACK...");
+            message = this.receiveBlocking(connection, 2000);
+            if (!(message instanceof Ack)) return;
+            this.closeConnection(connection);
+        } catch (IOException | MessageTimeoutException e) {
+            e.printStackTrace();
+        }
     }
 
     public void start() {

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -113,6 +114,32 @@ public abstract class SSLPeer {
         }
 
         return reply;
+    }
+
+    public void receiveFile(SSLConnection connection, FileChannel fileChannel, long size) {
+        try {
+            int total = 0;
+            connection.setPeerData(ByteBuffer.allocate(10 * 1024));
+            while (true) {
+                int bytes;
+                while ((bytes = this.client.receiveFile(connection, fileChannel)) == 0);
+                total += bytes;
+
+                if (bytes < 0 || total == size) {
+                    return;
+                }
+            }
+        } catch (IOException e) {
+            log.error("Error receiving file: {}", e.getMessage());
+        }
+    }
+
+    public void sendFile(SSLConnection connection, FileChannel fileChannel) {
+        try {
+            this.client.sendFile(connection, fileChannel);
+        } catch (IOException | InterruptedException e) {
+            log.error("Error sending file: {}", e.getMessage());
+        }
     }
 
     public void handleNotification(Object message, SSLConnection connection) {

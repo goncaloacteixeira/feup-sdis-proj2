@@ -1,5 +1,6 @@
 package messages;
 
+import messages.application.ApplicationMessage;
 import messages.chord.ChordMessage;
 import operations.Operation;
 import peer.Peer;
@@ -57,12 +58,11 @@ public abstract class Message {
         if (parts.length == 2) body = Arrays.copyOfRange(buffer, headerBytes + 4, size);
 
         if (type.equals("CHORD")) {
-            // parse chord message
             return ChordMessage.parse(sender, parts[0].split("\r\n")[1], body);
         } else if (type.equals("APP")) {
-            // parse application message
-
+            return ApplicationMessage.parse(sender, parts[0].split("\r\n")[1], body);
         }
+
         return null;
     }
 
