@@ -3,6 +3,7 @@ package operations.application;
 import messages.application.Ack;
 import messages.application.ApplicationMessage;
 import messages.application.Backup;
+import messages.application.Nack;
 import operations.chord.ChordOperation;
 import peer.Constants;
 import peer.Peer;
@@ -16,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 
 public class BackupOp extends AppOperation {
     public BackupOp(SSLConnection connection, ApplicationMessage message, Peer context) {
@@ -29,6 +31,17 @@ public class BackupOp extends AppOperation {
         long size = ((Backup) message).getSize();
         int key = ((Backup) message).getKey();
         int replicationDegree = ((Backup) message).getReplicationDegree();
+
+        // test capacity
+        if (false) {
+            log.info("No space to store file with size: {}", Utils.prettySize(size));
+            context.send(this.connection, new Nack(this.context.getReference(), "NOSPACE".getBytes(StandardCharsets.UTF_8)));
+            return;
+        } else if (this.context.getSavedFile(fileId) != null) {
+            log.info("Already have this file backed up!");
+            context.send(this.connection, new Nack(this.context.getReference(), "HAVEFILE".getBytes(StandardCharsets.UTF_8)));
+            return;
+        }
 
         log.info("Staring backup on fileId: {} for owner: {} with size: {}", fileId, owner, Utils.prettySize(size));
 

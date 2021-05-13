@@ -3,6 +3,7 @@ package peer;
 import messages.Message;
 import messages.application.Ack;
 import messages.application.Backup;
+import messages.application.Nack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import peer.backend.PeerFile;
@@ -112,7 +113,12 @@ public class Peer extends ChordPeer implements RemotePeer {
                 return "Could not find Peers to Backup this file!";
             }
 
-            PeerFile peerFile = new PeerFile(-1, fileId, this.getReference(), size, replicationDegree);
+            PeerFile peerFile;
+            if (this.internalState.getSentFilesMap().containsKey(filename)) {
+                peerFile = this.internalState.getSentFilesMap().get(filename);
+            } else {
+                peerFile = new PeerFile(-1, fileId, this.getReference(), size, replicationDegree);
+            }
 
             log.info("Sending file to: {} with keys: {}", targetPeers, targetKeys);
             List<Future<String>> tasks = new ArrayList<>();
@@ -161,7 +167,22 @@ public class Peer extends ChordPeer implements RemotePeer {
             this.send(connection, message);
             log.info("Waiting ACK from Peer: {}...", target);
             Message reply = this.receiveBlocking(connection, 100);
-            if (!(reply instanceof Ack)) return "Failed to receive ACK from Peer after BACKUP request";
+
+            if (reply instanceof Ack) {
+                // continue
+            } else if (reply instanceof Nack) {
+                if (((Nack) reply).getMessage().equals("NOSPACE")) {
+                    return String.format("Peer %s has no space to store the file", target);
+                } else if (((Nack) reply).getMessage().equals("HAVEFILE")) {
+                    peerFile.addKey(message.getKey());
+                    this.closeConnection(connection);
+                    return String.format("Peer %s already has the file", target);
+                } else {
+                    return String.format("Received unexpected message from Peer: %s", target);
+                }
+            } else {
+                return String.format("Received unexpected message from Peer: %s", target);
+            }
 
             FileChannel fileChannel = FileChannel.open(file.toPath());
             log.info("Sending file to Peer {}...", target);
@@ -176,6 +197,7 @@ public class Peer extends ChordPeer implements RemotePeer {
 
             peerFile.addKey(message.getKey());
         } catch (IOException | MessageTimeoutException e) {
+            e.printStackTrace();
             return "Failed to Backup file on Peer " + target;
         }
 
@@ -194,6 +216,10 @@ public class Peer extends ChordPeer implements RemotePeer {
     public void addSavedFile(int key, String id, ChordReference owner, long size, int replicationDegree) {
         PeerFile file = new PeerFile(key, id, owner, size, replicationDegree);
         this.internalState.addSavedFile(file);
+    }
+
+    public PeerFile getSavedFile(String fileId) {
+        return this.internalState.getSavedFilesMap().get(fileId);
     }
 
     public void start() {

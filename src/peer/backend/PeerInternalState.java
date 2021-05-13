@@ -7,10 +7,11 @@ import peer.Peer;
 import peer.Utils;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class PeerInternalState implements Serializable {
     private static final Logger log = LogManager.getLogger(PeerInternalState.class);
@@ -77,7 +78,7 @@ public class PeerInternalState implements Serializable {
             e.printStackTrace();
             return;
         }
-        
+
         log.info("Starting Async Tasks...");
         this.startAsyncChecks();
 
@@ -100,6 +101,11 @@ public class PeerInternalState implements Serializable {
     }
 
     public void addSentFile(String filename, PeerFile file) {
+        if (this.sentFilesMap.containsKey(filename)) {
+            for (Integer key : this.sentFilesMap.get(filename).getKeys()) {
+                file.addKey(key);
+            }
+        }
         this.sentFilesMap.put(filename, file);
     }
 

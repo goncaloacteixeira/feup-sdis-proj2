@@ -160,7 +160,6 @@ public abstract class SSLPeer {
     }
 
     public void handleNotification(Object message, SSLConnection connection) {
-        // ((Message) message).getOperation((Peer) this, connection).run();
         executor.submit(((Message) message).getOperation((Peer) this, connection));
     }
 

@@ -3,10 +3,7 @@ package peer.backend;
 import peer.chord.ChordReference;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PeerFile implements Serializable {
@@ -15,7 +12,7 @@ public class PeerFile implements Serializable {
     private final ChordReference owner;
     private final long size;
     private final int replicationDegree;
-    private final List<Integer> keys = new ArrayList<>();
+    private final Set<Integer> keys = new HashSet<>();
 
     public PeerFile(int key, String id, ChordReference owner, long size, int replicationDegree) {
         // key -1 means it belongs to this peer
@@ -64,6 +61,10 @@ public class PeerFile implements Serializable {
                 ", replicationDegree=" + replicationDegree +
                 ", keys=" + keys +
                 '}';
+    }
+
+    public Set<Integer> getKeys() {
+        return keys;
     }
 
     @Override
