@@ -28,11 +28,12 @@ public class BackupOp extends AppOperation {
         ChordReference owner = ((Backup) message).getOwner();
         long size = ((Backup) message).getSize();
         int key = ((Backup) message).getKey();
+        int replicationDegree = ((Backup) message).getReplicationDegree();
 
         log.info("Staring backup on fileId: {} for owner: {} with size: {}", fileId, owner, Utils.prettySize(size));
 
         try {
-            FileOutputStream outputStream = new FileOutputStream(fileId + "_" + key);
+            FileOutputStream outputStream = new FileOutputStream(this.context.getFileLocation(fileId));
             FileChannel fileChannel = outputStream.getChannel();
             log.info("Ready to receive file...");
             context.send(this.connection, new Ack(this.context.getReference()));
@@ -43,6 +44,8 @@ public class BackupOp extends AppOperation {
             log.info("Received file!");
             log.info("Sending ACK to client so they can close connection");
             context.send(this.connection, new Ack(this.context.getReference()));
+
+            this.context.addSavedFile(key, fileId, owner, size, replicationDegree);
         } catch (IOException e) {
             e.printStackTrace();
         }

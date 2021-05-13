@@ -5,6 +5,8 @@ import messages.application.Ack;
 import messages.application.Backup;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import peer.backend.PeerFile;
+import peer.backend.PeerInternalState;
 import peer.chord.ChordPeer;
 import peer.chord.ChordReference;
 import peer.ssl.MessageTimeoutException;
@@ -20,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -69,7 +72,12 @@ public class Peer extends ChordPeer implements RemotePeer {
         this.sap = sap;
     }
 
+    @Override
     public String backup(String filename, int replicationDegree) {
+        if (!this.isActive()) {
+            return "Peer's Server is not online yet!";
+        }
+
         if (this.successor() == null || this.successor().getGuid() == this.guid) {
             return "Could not start BACKUP as this peer has not found other peers yet";
         }
@@ -104,25 +112,35 @@ public class Peer extends ChordPeer implements RemotePeer {
                 return "Could not find Peers to Backup this file!";
             }
 
+            PeerFile peerFile = new PeerFile(-1, fileId, this.getReference(), size, replicationDegree);
+
             log.info("Sending file to: {} with keys: {}", targetPeers, targetKeys);
             List<Future<String>> tasks = new ArrayList<>();
 
             for (ChordReference targetPeer : targetPeers) {
-                String body = String.join("::", Arrays.asList(fileId, String.valueOf(size), this.getReference().toString(), targetKeys.get(targetPeers.indexOf(targetPeer)).toString()));
+                String body = String.join("::",
+                        Arrays.asList(fileId,
+                                String.valueOf(size),
+                                this.getReference().toString(),
+                                targetKeys.get(targetPeers.indexOf(targetPeer)).toString(),
+                                String.valueOf(replicationDegree)
+                        ));
                 Backup message = new Backup(this.getReference(), body.getBytes(StandardCharsets.UTF_8));
 
-                Callable<String> runnable = () -> backup(targetPeer, file, message);
+                Callable<String> runnable = () -> backup(targetPeer, file, message, peerFile);
                 tasks.add(executor.submit(runnable));
             }
 
 
-            StringBuilder result = new StringBuilder("----------------------------------------------------------------");
+            StringBuilder result = new StringBuilder("----------------------------------------------------------------\n");
             result.append(String.format("Result for %s with replication degree %d\n", filename, replicationDegree));
             for (Future<String> task : tasks) {
                 String peerResult = task.get();
                 result.append(peerResult).append("\n");
             }
             result.append("----------------------------------------------------------------");
+
+            this.internalState.addSentFile(filename, peerFile);
 
             return result.toString();
         } catch (IOException e) {
@@ -136,7 +154,7 @@ public class Peer extends ChordPeer implements RemotePeer {
         return "File Backed Up!";
     }
 
-    private String backup(ChordReference target, File file, Backup message) {
+    private String backup(ChordReference target, File file, Backup message, PeerFile peerFile) {
         try {
             log.info("Starting backup for {} on Peer: {}", file.getName(), target);
             SSLConnection connection = this.connectToPeer(target.getAddress());
@@ -155,11 +173,27 @@ public class Peer extends ChordPeer implements RemotePeer {
             if (!(reply instanceof Ack)) return "Failed to receive ACK from peer after sending file";
             log.info("Received ACK from Peer {}!", target);
             this.closeConnection(connection);
+
+            peerFile.addKey(message.getKey());
         } catch (IOException | MessageTimeoutException e) {
             return "Failed to Backup file on Peer " + target;
         }
 
         return "Backup Successful on Peer " + target;
+    }
+
+    @Override
+    public String state() throws RemoteException {
+        return this.internalState.toString();
+    }
+
+    public String getFileLocation(String fileId) {
+        return String.format(PeerInternalState.FILES_PATH, this.guid, fileId);
+    }
+
+    public void addSavedFile(int key, String id, ChordReference owner, long size, int replicationDegree) {
+        PeerFile file = new PeerFile(key, id, owner, size, replicationDegree);
+        this.internalState.addSavedFile(file);
     }
 
     public void start() {

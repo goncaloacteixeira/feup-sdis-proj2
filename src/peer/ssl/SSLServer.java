@@ -29,7 +29,7 @@ public class SSLServer<M> extends SSLCommunication<M> {
     private InetSocketAddress address;
     private final Selector selector;
     private final SSLContext context;
-    private boolean active = false;
+    public boolean active = false;
     private final List<SSLPeer> observers = new ArrayList<>();
 
     public SSLServer(SSLContext context, InetSocketAddress address, Decoder<M> decoder, Encoder<M> encoder, Sizer<M> sizer) throws IOException {

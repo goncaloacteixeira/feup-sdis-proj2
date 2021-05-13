@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import peer.Constants;
 import peer.Peer;
 import peer.Utils;
+import peer.backend.PeerInternalState;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
@@ -27,6 +28,8 @@ public abstract class SSLPeer {
     private final ExecutorService executor = Executors.newFixedThreadPool(4);
     private final SSLServer<Message> server;
     private final SSLClient<Message> client;
+
+    protected PeerInternalState internalState;
 
     private static Message decode(ByteBuffer byteBuffer) {
         byte[] buffer;
@@ -69,6 +72,10 @@ public abstract class SSLPeer {
         this.address = this.server.getAddress();
         this.server.addObserver(this);
         new Thread(this.server::start).start();
+    }
+
+    public boolean isActive() {
+        return server.active;
     }
 
     public synchronized SSLConnection connectToPeer(InetSocketAddress address) {
