@@ -10,13 +10,14 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 public class PeerInternalState implements Serializable {
     private static final Logger log = LogManager.getLogger(PeerInternalState.class);
 
     private final ConcurrentHashMap<String, PeerFile> sentFilesMap = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, PeerFile> savedFilesMap = new ConcurrentHashMap<>();
+    private final transient ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     public static transient String PEER_DIR = "peer%d";
     public final static transient String FILES_PATH = "peer%d/%s";
@@ -29,6 +30,10 @@ public class PeerInternalState implements Serializable {
 
     public PeerInternalState(Peer peer) {
         this.peer = peer;
+    }
+
+    private void startAsyncChecks() {
+        this.scheduler.scheduleAtFixedRate(this::commit, 5, 20, TimeUnit.SECONDS);
     }
 
     public static PeerInternalState load(Peer peer) {
@@ -62,18 +67,22 @@ public class PeerInternalState implements Serializable {
         // create dir if it does not exist
         if (!directory.exists())
             if (!directory.mkdir()) {
-                System.out.println("[PIS] Directory doesn't exist but could not be created");
+                log.info("Directory doesn't exist but could not be created");
                 return;
             }
         try {
             new File(DB_FILENAME).createNewFile();
         } catch (IOException e) {
-            System.out.println("[PIS] Could not load/create database file");
+            log.info("[PIS] Could not load/create database file");
             e.printStackTrace();
             return;
         }
+        
+        log.info("Starting Async Tasks...");
+        this.startAsyncChecks();
+
         // this.updateOccupation();
-        System.out.println("[PIS] Database Loaded/Created Successfully");
+        log.info("Database Loaded/Created Successfully");
     }
 
     public void commit() {
