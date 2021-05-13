@@ -27,12 +27,12 @@ public class BackupOp extends AppOperation {
         String fileId = ((Backup) message).getFileID();
         ChordReference owner = ((Backup) message).getOwner();
         long size = ((Backup) message).getSize();
+        int key = ((Backup) message).getKey();
 
         log.info("Staring backup on fileId: {} for owner: {} with size: {}", fileId, owner, Utils.prettySize(size));
 
-        File file = new File(fileId);
         try {
-            FileOutputStream outputStream = new FileOutputStream("./test.log");
+            FileOutputStream outputStream = new FileOutputStream(fileId + "_" + key);
             FileChannel fileChannel = outputStream.getChannel();
             log.info("Ready to receive file...");
             context.send(this.connection, new Ack(this.context.getReference()));

@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,6 +43,19 @@ public class ChordReference implements Serializable {
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChordReference reference = (ChordReference) o;
+        return guid == reference.guid;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(guid);
     }
 
     @Override

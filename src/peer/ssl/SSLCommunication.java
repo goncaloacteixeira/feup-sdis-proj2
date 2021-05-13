@@ -251,7 +251,6 @@ public class SSLCommunication<M> {
 
     protected void sendFile(SSLConnection connection, FileChannel fileChannel) throws IOException, InterruptedException {
         SSLEngine engine = connection.getEngine();
-        System.out.println("Protocol: " + engine.getApplicationProtocol());
 
         connection.setAppData(ByteBuffer.allocate(Constants.CHUNK_SIZE));
         int bytesRead = fileChannel.read(connection.getAppData());

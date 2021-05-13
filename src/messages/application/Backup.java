@@ -10,6 +10,7 @@ public class Backup extends ApplicationMessage {
     private final String fileID;
     private final long size;
     private final ChordReference owner;
+    private final int key;
 
     public Backup(ChordReference sender, byte[] body) {
         super("BACKUP", sender, body);
@@ -22,6 +23,7 @@ public class Backup extends ApplicationMessage {
         fileID = parts[0];
         size = Long.parseLong(parts[1]);
         owner = ChordReference.parse(parts[2]);
+        key = Integer.parseInt(parts[3]);
     }
 
     @Override
@@ -35,6 +37,10 @@ public class Backup extends ApplicationMessage {
 
     public long getSize() {
         return size;
+    }
+
+    public int getKey() {
+        return key;
     }
 
     public ChordReference getOwner() {
