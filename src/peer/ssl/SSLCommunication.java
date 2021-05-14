@@ -66,8 +66,6 @@ public class SSLCommunication<M> {
                     case CLOSED:
                         log.debug("The other peer requests closing the connection");
                         this.closeConnection(connection);
-                        // connection.getEngine().closeOutbound();
-                        // connection.getSocketChannel().close();
                         log.debug("Connection closed!");
                         return null;
                     default:

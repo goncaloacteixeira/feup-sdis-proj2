@@ -22,14 +22,10 @@ import java.util.List;
 public class SSLServer<M> extends SSLCommunication<M> {
     private final Logger log = LogManager.getLogger(getClass());
 
-    private ByteBuffer appData;
-    private ByteBuffer netData;
-    private ByteBuffer peerData;
-    private ByteBuffer peerNetData;
     private InetSocketAddress address;
     private final Selector selector;
     private final SSLContext context;
-    public boolean active = false;
+    public boolean active;
     private final List<SSLPeer> observers = new ArrayList<>();
 
     public SSLServer(SSLContext context, InetSocketAddress address, Decoder<M> decoder, Encoder<M> encoder, Sizer<M> sizer) throws IOException {
@@ -37,14 +33,6 @@ public class SSLServer<M> extends SSLCommunication<M> {
 
         this.context = context;
         this.address = address;
-
-        // Allocate the server buffers
-        SSLSession dummy = context.createSSLEngine().getSession();
-        appData = ByteBuffer.allocate(dummy.getApplicationBufferSize());
-        netData = ByteBuffer.allocate(dummy.getPacketBufferSize());
-        peerData = ByteBuffer.allocate(dummy.getApplicationBufferSize());
-        peerNetData = ByteBuffer.allocate(dummy.getPacketBufferSize());
-        dummy.invalidate();
 
         this.selector = SelectorProvider.provider().openSelector();
         ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
@@ -141,38 +129,5 @@ public class SSLServer<M> extends SSLCommunication<M> {
 
         connection.setHandshake(this.doHandshake(connection));
         socketChannel.register(this.selector, SelectionKey.OP_READ, connection);
-    }
-
-    @Override
-    M receive(SSLConnection connection) throws Exception {
-        M message = super.receive(connection);
-
-        // update buffers (they might have been replaced)
-        this.appData = connection.getAppData();
-        this.netData = connection.getNetData();
-        this.peerData = connection.getPeerData();
-        this.peerNetData = connection.getPeerNetData();
-
-        return message;
-    }
-
-    @Override
-    public void send(SSLConnection connection, M message) throws IOException {
-        super.send(connection, message);
-
-        this.appData = connection.getAppData();
-        this.netData = connection.getNetData();
-        this.peerData = connection.getPeerData();
-        this.peerNetData = connection.getPeerNetData();
-    }
-
-    @Override
-    protected boolean doHandshake(SSLConnection connection) throws IOException {
-        boolean result = super.doHandshake(connection);
-
-        this.peerData = connection.getPeerData();
-        this.peerNetData = connection.getPeerNetData();
-
-        return result;
     }
 }
