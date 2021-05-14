@@ -62,7 +62,7 @@ public abstract class SSLPeer {
 
         this.context = SSLContext.getInstance("TLSv1.2");
         context.init(
-                SSLCommunication.createKeyManager("resources/server.jks", "sdisg27", "sdisg27"),
+                SSLCommunication.createKeyManager("resources/peer.jks", "sdisg27", "sdisg27"),
                 SSLCommunication.createTrustManager("resources/truststore.jks", "sdisg27"),
                 new SecureRandom());
 

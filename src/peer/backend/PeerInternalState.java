@@ -18,7 +18,7 @@ public class PeerInternalState implements Serializable {
 
     private final ConcurrentHashMap<String, PeerFile> sentFilesMap = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, PeerFile> savedFilesMap = new ConcurrentHashMap<>();
-    private final transient ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private transient ScheduledExecutorService scheduler;
 
     public static transient String PEER_DIR = "peer%d";
     public final static transient String FILES_PATH = "peer%d/%s";
@@ -31,6 +31,10 @@ public class PeerInternalState implements Serializable {
 
     public PeerInternalState(Peer peer) {
         this.peer = peer;
+    }
+
+    private void init() {
+        this.scheduler = Executors.newSingleThreadScheduledExecutor();
     }
 
     private void startAsyncChecks() {
@@ -58,6 +62,7 @@ public class PeerInternalState implements Serializable {
             peerInternalState = new PeerInternalState(peer);
         }
 
+        peerInternalState.init();
         peerInternalState.build();
 
         return peerInternalState;
