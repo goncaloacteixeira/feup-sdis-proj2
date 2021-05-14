@@ -258,7 +258,7 @@ public abstract class ChordPeer extends SSLPeer {
 
             this.setFinger(this.nextFinger, findSuccessor(successor(), key));
         } catch (Exception e) {
-            e.printStackTrace();
+
         }
         log.debug("Finger table after fixing:\n" + this.getRoutingTableString());
         this.nextFinger++;
