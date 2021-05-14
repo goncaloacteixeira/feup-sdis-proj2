@@ -8,7 +8,7 @@ import java.rmi.registry.Registry;
 
 public class TestApp {
     public static void main(String[] args) throws RemoteException {
-        if (args.length < 4) {
+        if (args.length < 2) {
             System.out.println("Usage: java client.Client <SAP> <OPERATION> <PARAM1> <PARAM2> ...");
             return;
         }
@@ -36,6 +36,8 @@ public class TestApp {
             case "LOOKUP":
                 System.out.println(stub.findSuccessor(Integer.parseInt(args[2])));
                 break;
+            case "STATE":
+                System.out.println(stub.state());
             default:
                 System.out.println("Invalid Operation!");
         }

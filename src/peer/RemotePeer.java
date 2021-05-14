@@ -11,4 +11,6 @@ public interface RemotePeer extends Remote {
     ChordReference findSuccessor(int guid) throws RemoteException;
 
     String backup(String filename, int replicationDegree) throws RemoteException;
+
+    String state() throws RemoteException;
 }

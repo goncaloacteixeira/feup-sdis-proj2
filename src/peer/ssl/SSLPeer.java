@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import peer.Constants;
 import peer.Peer;
 import peer.Utils;
+import peer.backend.PeerInternalState;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
@@ -27,6 +28,8 @@ public abstract class SSLPeer {
     private final ExecutorService executor = Executors.newFixedThreadPool(4);
     private final SSLServer<Message> server;
     private final SSLClient<Message> client;
+
+    protected PeerInternalState internalState;
 
     private static Message decode(ByteBuffer byteBuffer) {
         byte[] buffer;
@@ -59,7 +62,7 @@ public abstract class SSLPeer {
 
         this.context = SSLContext.getInstance("TLSv1.2");
         context.init(
-                SSLCommunication.createKeyManager("resources/server.jks", "sdisg27", "sdisg27"),
+                SSLCommunication.createKeyManager("resources/peer.jks", "sdisg27", "sdisg27"),
                 SSLCommunication.createTrustManager("resources/truststore.jks", "sdisg27"),
                 new SecureRandom());
 
@@ -69,6 +72,10 @@ public abstract class SSLPeer {
         this.address = this.server.getAddress();
         this.server.addObserver(this);
         new Thread(this.server::start).start();
+    }
+
+    public boolean isActive() {
+        return server.active;
     }
 
     public synchronized SSLConnection connectToPeer(InetSocketAddress address) {
@@ -153,7 +160,6 @@ public abstract class SSLPeer {
     }
 
     public void handleNotification(Object message, SSLConnection connection) {
-        // ((Message) message).getOperation((Peer) this, connection).run();
         executor.submit(((Message) message).getOperation((Peer) this, connection));
     }
 

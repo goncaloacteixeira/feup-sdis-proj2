@@ -11,6 +11,7 @@ public class Backup extends ApplicationMessage {
     private final long size;
     private final ChordReference owner;
     private final int key;
+    private final int replicationDegree;
 
     public Backup(ChordReference sender, byte[] body) {
         super("BACKUP", sender, body);
@@ -24,6 +25,7 @@ public class Backup extends ApplicationMessage {
         size = Long.parseLong(parts[1]);
         owner = ChordReference.parse(parts[2]);
         key = Integer.parseInt(parts[3]);
+        replicationDegree = Integer.parseInt(parts[4]);
     }
 
     @Override
@@ -45,6 +47,10 @@ public class Backup extends ApplicationMessage {
 
     public ChordReference getOwner() {
         return owner;
+    }
+
+    public int getReplicationDegree() {
+        return replicationDegree;
     }
 
     @Override

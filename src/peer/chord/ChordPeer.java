@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import peer.Constants;
 import peer.Peer;
+import peer.backend.PeerInternalState;
 import peer.ssl.MessageTimeoutException;
 import peer.ssl.SSLConnection;
 import peer.ssl.SSLPeer;
@@ -70,6 +71,8 @@ public abstract class ChordPeer extends SSLPeer {
             this.guid = generateNewKey(this.address);
             this.setSuccessor(new ChordReference(this.address, this.guid));
             log.debug("Peer was started as boot, assigning GUID:" + this.guid);
+
+            this.internalState = PeerInternalState.load((Peer) this);
             return true;
         }
         log.debug("Trying to join the CHORD circle on: " + this.bootPeer);
@@ -101,6 +104,10 @@ public abstract class ChordPeer extends SSLPeer {
 
         this.setSuccessor(bootPeer);
         reply.getOperation((Peer) this, bootPeerConnection).run();
+
+        // Load or Create Internal State
+        this.internalState = PeerInternalState.load((Peer) this);
+
         executorService.submit(() -> this.findSuccessor(bootPeer, this.guid));
 
         this.closeConnection(bootPeerConnection);
@@ -251,7 +258,7 @@ public abstract class ChordPeer extends SSLPeer {
 
             this.setFinger(this.nextFinger, findSuccessor(successor(), key));
         } catch (Exception e) {
-            e.printStackTrace();
+
         }
         log.debug("Finger table after fixing:\n" + this.getRoutingTableString());
         this.nextFinger++;

@@ -28,6 +28,8 @@ public abstract class ApplicationMessage extends Message {
         switch (chordType) {
             case "ACK":
                 return new Ack(sender);
+            case "NACK":
+                return new Nack(sender, body);
             case "BACKUP":
                 return new Backup(sender, body);
             default:
