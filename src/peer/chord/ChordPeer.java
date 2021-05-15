@@ -17,6 +17,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 public abstract class ChordPeer extends SSLPeer {
@@ -72,7 +73,7 @@ public abstract class ChordPeer extends SSLPeer {
             this.guid = generateNewKey(this.address);
             this.setSuccessor(new ChordReference(this.address, this.guid));
             log.debug("Peer was started as boot, assigning GUID:" + this.guid);
-
+            this.startPeriodicChecks();
             this.internalState = PeerInternalState.load((Peer) this);
             return true;
         }
@@ -109,9 +110,44 @@ public abstract class ChordPeer extends SSLPeer {
         // Load or Create Internal State
         this.internalState = PeerInternalState.load((Peer) this);
 
-        executorService.submit(() -> this.findSuccessor(bootPeer, this.guid));
-
         this.closeConnection(bootPeerConnection);
+        this.setSuccessor(this.findSuccessor(bootPeer, this.guid));
+
+        /**
+         * copy all keys less than this.guid from successor
+         * send message COPY
+         * receive COPYREPLY message with key:fileID::key:fileID
+         * close connection
+         * for every fileID start connection with message GET
+         * receive ACK/NACK send STARTRECEIVE
+         * receive file
+         * send DELETE for fileID
+         */
+
+        SSLConnection connection = this.connectToPeer(successor().getAddress());
+        this.send(connection, new Copy(new ChordReference(this.address, this.guid)));
+        CopyReply copyReply;
+        try {
+            copyReply = (CopyReply) this.receiveBlocking(connection, 100);
+        } catch (MessageTimeoutException e) {
+            log.error("Could not receive copy reply...");
+            this.startPeriodicChecks();
+            return true;
+        }
+
+        log.info("Received CopyReply: {}", copyReply);
+
+        List<Map.Entry<Integer, String>> files = copyReply.getFiles();
+        if (files.size() == 0) {
+            this.startPeriodicChecks();
+            return true;
+        }
+
+        for (Map.Entry<Integer, String> file : files) {
+            log.info("Starting GET for file: {}", file);
+        }
+
+        this.startPeriodicChecks();
         return true;
     }
 
@@ -247,7 +283,6 @@ public abstract class ChordPeer extends SSLPeer {
             if (between(predecessor.getGuid(), this.guid, successor().getGuid(), true)) {
                 log.debug("Successor Updated: " + predecessor);
                 this.setSuccessor(predecessor);
-                // start backup for keys higher or equal to predecessor
             }
         }
 

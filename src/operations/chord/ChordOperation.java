@@ -39,6 +39,8 @@ public abstract class ChordOperation extends Operation {
                 return new PredecessorReplyOp(connection, (PredecessorReply) message, context);
             case "NOTIFICATION":
                 return new NotificationOp(connection, (Notification) message, context);
+            case "COPY":
+                return new CopyOp(connection, message, context);
             default:
                 return null;
         }

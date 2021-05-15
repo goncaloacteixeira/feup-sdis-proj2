@@ -218,13 +218,17 @@ public class Peer extends ChordPeer implements RemotePeer {
         this.internalState.addSavedFile(file);
     }
 
+    public List<PeerFile> getSavedFiles() {
+        return new ArrayList<>(this.internalState.getSavedFilesMap().values());
+    }
+
     public PeerFile getSavedFile(String fileId) {
         return this.internalState.getSavedFilesMap().get(fileId);
     }
 
     public void start() {
         this.join();
-        this.startPeriodicChecks();
+        // this.startPeriodicChecks();
     }
 
     @Override
