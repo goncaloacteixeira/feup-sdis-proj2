@@ -188,7 +188,7 @@ public abstract class ChordPeer extends SSLPeer {
             log.debug("Could not receive successor");
             // try to close connection
             this.closeConnection(connection);
-            return successor();
+            return ((Peer) this).getReference();
         }
 
         this.closeConnection(connection);
