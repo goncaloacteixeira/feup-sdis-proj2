@@ -110,6 +110,7 @@ public abstract class SSLPeer {
     public Message receiveBlocking(SSLConnection connection, int timeToRead) throws MessageTimeoutException {
         Message reply;
         int attempt = 0;
+        connection.getPeerData().clear();
         while ((reply = this.receive(connection)) == null && attempt < 50) {
             attempt++;
             try {

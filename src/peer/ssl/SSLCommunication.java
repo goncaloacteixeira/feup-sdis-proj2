@@ -37,40 +37,47 @@ public class SSLCommunication<M> {
 
         SSLEngine engine = connection.getEngine();
 
-        connection.getPeerNetData().clear();
-
         int bytesRead = connection.getSocketChannel().read(connection.getPeerNetData());
+
+        log.debug("Bytes read from socket: {}", bytesRead);
+
         if (bytesRead > 0) {
             connection.getPeerNetData().flip();
 
             M message = null;
 
-            while (connection.getPeerNetData().hasRemaining()) {
-                connection.getPeerData().clear();
-                SSLEngineResult result = engine.unwrap(connection.getPeerNetData(), connection.getPeerData());
+            SSLEngineResult result = engine.unwrap(connection.getPeerNetData(), connection.getPeerData());
 
-                switch (result.getStatus()) {
-                    case OK:
-                        connection.getPeerData().flip();
+            switch (result.getStatus()) {
+                case OK:
+                    connection.getPeerNetData().compact();
+                    break;
+                case BUFFER_OVERFLOW:
+                    connection.setPeerData(this.enlargeApplicationBuffer(engine, connection.getPeerData()));
+                    break;
+                case BUFFER_UNDERFLOW:
+                    connection.setPeerNetData(this.handleBufferUnderflow(engine, connection.getPeerNetData()));
+                    break;
+                case CLOSED:
+                    log.debug("The other peer requests closing the connection");
+                    this.closeConnection(connection);
+                    log.debug("Connection closed!");
+                    return null;
+                default:
+                    throw new IllegalStateException("Invalid SSL Status: " + result.getStatus());
+            }
 
-                        message = this.decoder.decode(connection.getPeerData());
-                        log.debug("Message received: " + message);
+            if (connection.getPeerData().hasRemaining()) {
+                connection.getPeerData().flip();
 
-                        break;
-                    case BUFFER_OVERFLOW:
-                        connection.setPeerData(this.enlargeApplicationBuffer(engine, connection.getPeerData()));
-                        break;
-                    case BUFFER_UNDERFLOW:
-                        connection.setPeerNetData(this.handleBufferUnderflow(engine, connection.getPeerNetData()));
-                        break;
-                    case CLOSED:
-                        log.debug("The other peer requests closing the connection");
-                        this.closeConnection(connection);
-                        log.debug("Connection closed!");
-                        return null;
-                    default:
-                        throw new IllegalStateException("Invalid SSL Status: " + result.getStatus());
+                try {
+                    message = this.decoder.decode(connection.getPeerData());
+                } catch (Exception e) {
+                    log.debug("Could not parse message, maybe on the next read");
+                    return null;
                 }
+
+                log.debug("Message received: " + message);
             }
 
             return message;
@@ -102,6 +109,7 @@ public class SSLCommunication<M> {
                     while (connection.getNetData().hasRemaining()) {
                         bytesWritten += connection.getSocketChannel().write(connection.getNetData());
                     }
+                    log.debug("Bytes wrote to socket: {}", bytesWritten);
                     log.debug("Message Sent: " + message);
                     break;
                 case BUFFER_OVERFLOW:

@@ -40,6 +40,7 @@ public abstract class ChordPeer extends SSLPeer {
     protected void startPeriodicChecks() {
         scheduler.scheduleAtFixedRate(this::fixFingers, 1, 10, TimeUnit.SECONDS);
         scheduler.scheduleAtFixedRate(this::stabilize, 3, 15, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(this::checkPredecessor, 5, 15, TimeUnit.SECONDS);
     }
 
     public synchronized ChordReference successor() {
@@ -211,6 +212,10 @@ public abstract class ChordPeer extends SSLPeer {
         }
 
         SSLConnection connection = this.connectToPeer(successor().getAddress());
+        if (connection == null) {
+            return null;
+        }
+
         ChordReference self = new ChordReference(this.address, this.guid);
         Message message = new Predecessor(self);
         this.send(connection, message);
@@ -242,6 +247,7 @@ public abstract class ChordPeer extends SSLPeer {
             if (between(predecessor.getGuid(), this.guid, successor().getGuid(), true)) {
                 log.debug("Successor Updated: " + predecessor);
                 this.setSuccessor(predecessor);
+                // start backup for keys higher or equal to predecessor
             }
         }
 
@@ -300,6 +306,17 @@ public abstract class ChordPeer extends SSLPeer {
             return lhs < rhs ? (lhs < key && key < rhs) : (rhs > key || key > lhs);
         } else {
             return lhs < rhs ? (lhs < key && key <= rhs) : (rhs >= key || key > lhs);
+        }
+    }
+
+    public void checkPredecessor() {
+        if (predecessor != null) {
+            SSLConnection connection = this.connectToPeer(predecessor.getAddress());
+            if (connection == null) {
+                log.info("Could not reach predecessor!");
+                this.predecessor = null;
+            }
+            this.closeConnection(connection);
         }
     }
 }

@@ -88,7 +88,7 @@ public class SSLServer<M> extends SSLCommunication<M> {
                 }
             }
         }
-        log.debug("[PEER] Shutdown");
+        log.debug("Shutdown");
     }
 
     private void notify(M message, SSLConnection connection, SelectionKey key) {
