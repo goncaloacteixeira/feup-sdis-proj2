@@ -114,17 +114,6 @@ public abstract class ChordPeer extends SSLPeer {
         this.closeConnection(bootPeerConnection);
         this.setSuccessor(this.findSuccessor(bootPeer, this.guid));
 
-        /**
-         * copy all keys less than this.guid from successor
-         * send message COPY
-         * receive COPYREPLY message with key:fileID::key:fileID
-         * close connection
-         * for every fileID start connection with message GET
-         * receive ACK/NACK send STARTRECEIVE
-         * receive file
-         * send DELETE for fileID
-         */
-
         SSLConnection connection = this.connectToPeer(successor().getAddress());
         this.send(connection, new Copy(new ChordReference(this.address, this.guid)));
         CopyReply copyReply;
@@ -137,18 +126,15 @@ public abstract class ChordPeer extends SSLPeer {
         }
         this.closeConnection(connection);
 
-        log.info("Received CopyReply: {}", copyReply);
-
         List<PeerFile> files = copyReply.getFiles();
         if (files.size() == 0) {
             this.startPeriodicChecks();
             return true;
         }
 
+        log.info("Reclaiming {} files...", files.size());
         List<Future<PeerFile>> ops = new ArrayList<>();
         for (PeerFile file : files) {
-            log.info("Starting GET for file: {}", file);
-
             Callable<PeerFile> op = () -> this.reclaimFile(file);
             ops.add(executorService.submit(op));
         }
@@ -160,6 +146,8 @@ public abstract class ChordPeer extends SSLPeer {
                 log.error("Error processing operation");
             }
         }
+
+        log.info("Files reclaimed!");
 
         this.startPeriodicChecks();
         return true;

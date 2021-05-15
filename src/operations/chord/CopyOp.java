@@ -18,14 +18,11 @@ public class CopyOp extends ChordOperation {
 
     @Override
     public void run() {
-        log.info("Starting copy op...");
-
         int key = message.getSender().getGuid();
 
         List<String> keys = new ArrayList<>();
 
         for (PeerFile file : context.getSavedFiles()) {
-            log.info("Testing file: {} for peer {}", file.getKey(), key);
             if (file.getKey() < message.getSender().getGuid())
                 keys.add(String.format("%d|%s|%s|%d|%d", file.getKey(), file.getId(), file.getOwner(), file.getSize(), file.getReplicationDegree()));
         }
@@ -38,7 +35,6 @@ public class CopyOp extends ChordOperation {
 
             reply = new CopyReply(this.context.getReference(), replyBody);
         }
-        log.info("Sending message: " + reply);
 
         context.send(connection, reply);
     }

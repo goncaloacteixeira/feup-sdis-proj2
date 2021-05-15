@@ -261,6 +261,31 @@ public class Peer extends ChordPeer implements RemotePeer {
     }
 
     @Override
+    public String restore(String filename) throws RemoteException {
+        log.info("Starting RESTORE protocol for: {}", filename);
+
+        PeerFile peerFile = this.internalState.getSentFilesMap().get(filename);
+        if (peerFile == null) return "File was not backed up: " + filename;
+
+        String newFilename = "restored_" + new File(filename).getName();
+
+        // send get for each peer, if a nack is received abort and go to the next one
+        for (Integer key : peerFile.getKeys()) {
+            ChordReference reference = this.findSuccessor(key);
+            SSLConnection connection = this.connectToPeer(reference.getAddress());
+            if (connection == null) continue;
+
+            boolean result = this.receiveFile(connection, peerFile, newFilename);
+            if (result) {
+                log.info("Restored file: {} under: {}", filename, newFilename);
+                return "File: " + filename + " restored successfully!";
+            }
+        }
+
+        return "File: " + filename + " could not be restored!";
+    }
+
+    @Override
     public String state() throws RemoteException {
         return this.internalState.toString();
     }
