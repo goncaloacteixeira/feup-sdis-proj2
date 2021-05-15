@@ -27,7 +27,7 @@ public class CopyOp extends ChordOperation {
         for (PeerFile file : context.getSavedFiles()) {
             log.info("Testing file: {} for peer {}", file.getKey(), key);
             if (file.getKey() < message.getSender().getGuid())
-                keys.add(String.format("%d:%s", file.getKey(), file.getId()));
+                keys.add(String.format("%d|%s|%s|%d|%d", file.getKey(), file.getId(), file.getOwner(), file.getSize(), file.getReplicationDegree()));
         }
 
         Message reply;

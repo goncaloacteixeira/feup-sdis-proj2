@@ -32,6 +32,8 @@ public abstract class ApplicationMessage extends Message {
                 return new Nack(sender, body);
             case "BACKUP":
                 return new Backup(sender, body);
+            case "GET":
+                return new Get(sender, body);
             default:
                 return null;
         }

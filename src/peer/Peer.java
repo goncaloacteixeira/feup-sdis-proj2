@@ -3,6 +3,7 @@ package peer;
 import messages.Message;
 import messages.application.Ack;
 import messages.application.Backup;
+import messages.application.Get;
 import messages.application.Nack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,10 +15,12 @@ import peer.ssl.MessageTimeoutException;
 import peer.ssl.SSLConnection;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -171,11 +174,11 @@ public class Peer extends ChordPeer implements RemotePeer {
             if (reply instanceof Ack) {
                 // continue
             } else if (reply instanceof Nack) {
+                this.closeConnection(connection);
                 if (((Nack) reply).getMessage().equals("NOSPACE")) {
                     return String.format("Peer %s has no space to store the file", target);
                 } else if (((Nack) reply).getMessage().equals("HAVEFILE")) {
                     peerFile.addKey(message.getKey());
-                    this.closeConnection(connection);
                     return String.format("Peer %s already has the file", target);
                 } else {
                     return String.format("Received unexpected message from Peer: %s", target);
@@ -202,6 +205,59 @@ public class Peer extends ChordPeer implements RemotePeer {
         }
 
         return "Backup Successful on Peer " + target;
+    }
+
+    public boolean receiveFile(SSLConnection connection, PeerFile peerFile, String filename) {
+        log.info("Starting GET...");
+
+        String fileId = peerFile.getId();
+        ChordReference owner = peerFile.getOwner();
+        long size = peerFile.getSize();
+        int key = peerFile.getKey();
+        int replicationDegree = peerFile.getReplicationDegree();
+
+        // send GET message for fileID
+        this.send(connection, new Get(this.getReference(), peerFile.getId().getBytes(StandardCharsets.UTF_8)));
+        log.info("GET sent!");
+
+        // receive Acknowledgement
+        Message ack;
+        try {
+            ack = this.receiveBlocking(connection, 500);
+        } catch (MessageTimeoutException e) {
+            log.error("Could not receive ACK for GET message on for {}", peerFile);
+            return false;
+        }
+        if (ack instanceof Ack) {
+            // proceed
+        } else if (ack instanceof Nack) {
+            log.error("Not found: {}", peerFile);
+            return false;
+        }
+
+        // send new GET message, remote peer will start to write file to socket
+        this.send(connection, new Get(this.getReference(), peerFile.getId().getBytes(StandardCharsets.UTF_8)));
+
+        log.info("Getting file: {}", peerFile);
+
+        try {
+            FileOutputStream outputStream = new FileOutputStream(this.getFileLocation(filename));
+            FileChannel fileChannel = outputStream.getChannel();
+            log.info("Ready to receive file...");
+            connection.setPeerNetData(ByteBuffer.allocate(Constants.TLS_CHUNK_SIZE));
+            connection.getSocketChannel().configureBlocking(true);
+            this.receiveFile(connection, fileChannel, size);
+            fileChannel.close();
+            log.info("Received file!");
+
+            this.closeConnection(connection);
+
+            this.addSavedFile(key, fileId, owner, size, replicationDegree);
+            return true;
+        } catch (IOException e) {
+            log.error("Error receiving file: {}", e.getMessage());
+            return true;
+        }
     }
 
     @Override
