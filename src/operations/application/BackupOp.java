@@ -60,7 +60,7 @@ public class BackupOp extends AppOperation {
 
             this.context.addSavedFile(key, fileId, owner, size, replicationDegree);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error receiving file: {}", e.getMessage());
         }
     }
 }
