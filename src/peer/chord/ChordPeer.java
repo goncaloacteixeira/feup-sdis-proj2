@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import peer.Constants;
 import peer.Peer;
+import peer.backend.PeerFile;
 import peer.backend.PeerInternalState;
 import peer.ssl.MessageTimeoutException;
 import peer.ssl.SSLConnection;
@@ -17,6 +18,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 public abstract class ChordPeer extends SSLPeer {
@@ -38,8 +40,8 @@ public abstract class ChordPeer extends SSLPeer {
     }
 
     protected void startPeriodicChecks() {
-        scheduler.scheduleAtFixedRate(this::fixFingers, 1, 10, TimeUnit.SECONDS);
-        scheduler.scheduleAtFixedRate(this::stabilize, 3, 15, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(this::fixFingers, 1, 3, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(this::stabilize, 3, 5, TimeUnit.SECONDS);
         scheduler.scheduleAtFixedRate(this::checkPredecessor, 5, 15, TimeUnit.SECONDS);
     }
 
@@ -72,7 +74,7 @@ public abstract class ChordPeer extends SSLPeer {
             this.guid = generateNewKey(this.address);
             this.setSuccessor(new ChordReference(this.address, this.guid));
             log.debug("Peer was started as boot, assigning GUID:" + this.guid);
-
+            this.startPeriodicChecks();
             this.internalState = PeerInternalState.load((Peer) this);
             return true;
         }
@@ -109,10 +111,60 @@ public abstract class ChordPeer extends SSLPeer {
         // Load or Create Internal State
         this.internalState = PeerInternalState.load((Peer) this);
 
-        executorService.submit(() -> this.findSuccessor(bootPeer, this.guid));
-
         this.closeConnection(bootPeerConnection);
+        this.setSuccessor(this.findSuccessor(bootPeer, this.guid));
+
+        SSLConnection connection = this.connectToPeer(successor().getAddress());
+        this.send(connection, new Copy(new ChordReference(this.address, this.guid)));
+        CopyReply copyReply;
+        try {
+            copyReply = (CopyReply) this.receiveBlocking(connection, 100);
+        } catch (MessageTimeoutException e) {
+            log.error("Could not receive copy reply...");
+            this.startPeriodicChecks();
+            return true;
+        }
+        this.closeConnection(connection);
+
+        List<PeerFile> files = copyReply.getFiles();
+        if (files.size() == 0) {
+            this.startPeriodicChecks();
+            return true;
+        }
+
+        log.info("Reclaiming {} files...", files.size());
+        List<Future<PeerFile>> ops = new ArrayList<>();
+        for (PeerFile file : files) {
+            Callable<PeerFile> op = () -> this.reclaimFile(file);
+            ops.add(executorService.submit(op));
+        }
+
+        for (Future<PeerFile> op : ops) {
+            try {
+                log.info("Reclaimed: {}", op.get());
+            } catch (InterruptedException | ExecutionException e) {
+                log.error("Error processing operation");
+            }
+        }
+
+        log.info("Files reclaimed!");
+
+        this.startPeriodicChecks();
         return true;
+    }
+
+    private PeerFile reclaimFile(PeerFile file) {
+        SSLConnection newConnection = this.connectToPeer(successor().getAddress());
+        boolean result = ((Peer) this).receiveFile(newConnection, file, file.getId());
+        // connection is closed on receive file because there's nothing left to do on close
+
+        if (result) {
+            // send delete for file ID
+        } else {
+            return null;
+        }
+
+        return file;
     }
 
     public static int generateNewKey(InetSocketAddress address) {
@@ -247,7 +299,6 @@ public abstract class ChordPeer extends SSLPeer {
             if (between(predecessor.getGuid(), this.guid, successor().getGuid(), true)) {
                 log.debug("Successor Updated: " + predecessor);
                 this.setSuccessor(predecessor);
-                // start backup for keys higher or equal to predecessor
             }
         }
 

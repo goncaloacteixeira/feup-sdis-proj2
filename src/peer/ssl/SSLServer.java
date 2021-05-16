@@ -1,6 +1,7 @@
 package peer.ssl;
 
 import messages.application.Backup;
+import messages.application.Get;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -93,7 +94,7 @@ public class SSLServer<M> extends SSLCommunication<M> {
 
     private void notify(M message, SSLConnection connection, SelectionKey key) {
         for (SSLPeer observer : observers) {
-            if (message instanceof Backup) {
+            if (message instanceof Backup || message instanceof Get) {
                 key.cancel();
             }
             observer.handleNotification(message, connection);

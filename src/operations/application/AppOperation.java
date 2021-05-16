@@ -28,6 +28,8 @@ public abstract class AppOperation extends Operation {
         switch (message.getOperation()) {
             case "BACKUP":
                 return new BackupOp(connection, message, context);
+            case "GET":
+                return new GetOp(connection, message, context);
             default:
                 return null;
         }

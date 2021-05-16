@@ -41,6 +41,10 @@ public abstract class ChordMessage extends Message {
                 return new PredecessorReply(sender, body);
             case "NOTIFICATION":
                 return new Notification(sender, body);
+            case "COPY":
+                return new Copy(sender);
+            case "COPYREPLY":
+                return new CopyReply(sender, body);
             default:
                 return null;
         }
