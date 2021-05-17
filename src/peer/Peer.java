@@ -1,10 +1,7 @@
 package peer;
 
 import messages.Message;
-import messages.application.Ack;
-import messages.application.Backup;
-import messages.application.Get;
-import messages.application.Nack;
+import messages.application.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import peer.backend.PeerFile;
@@ -17,6 +14,7 @@ import peer.ssl.SSLConnection;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Executable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -285,7 +283,37 @@ public class Peer extends ChordPeer implements RemotePeer {
         return "File: " + filename + " could not be restored!";
     }
 
-    /** 29 93 187 230 **/
+    @Override
+    public String delete(String filename) throws RemoteException {
+        log.info("Starting DELETE client request for {}", filename);
+
+        PeerFile file = this.internalState.getSentFilesMap().get(filename);
+
+        if (file == null) {
+            log.error("File {} is not backed up", filename);
+            return String.format("File %s was not backed up!", filename);
+        }
+
+        Set<ChordReference> targetPeers = new HashSet<>();
+
+        for (Integer key : file.getKeys()) {
+            ChordReference reference = this.findSuccessor(key);
+            if (reference == null) continue;
+            targetPeers.add(reference);
+            Runnable executable = () -> sendDelete(file, reference);
+            executor.submit(executable);
+        }
+
+        log.info("All DELETE requests processed!");
+        return String.format("DELETE for %s was sent to:\n%s", filename, targetPeers);
+    }
+
+    private void sendDelete(PeerFile file, ChordReference reference) {
+        SSLConnection connection = this.connectToPeer(reference.getAddress());
+        if (connection == null) return;
+        this.send(connection, new Delete(this.getReference(), file.getId().getBytes(StandardCharsets.UTF_8)));
+        log.info("Sent DELETE to {} for {}", reference, file.getId());
+    }
 
     @Override
     public String state() throws RemoteException {
@@ -303,6 +331,14 @@ public class Peer extends ChordPeer implements RemotePeer {
 
     public List<PeerFile> getSavedFiles() {
         return new ArrayList<>(this.internalState.getSavedFilesMap().values());
+    }
+
+    public ConcurrentHashMap<String, PeerFile> getSentFilesMap() {
+        return this.internalState.getSentFilesMap();
+    }
+
+    public ConcurrentHashMap<String, PeerFile> getSavedFilesMap() {
+        return this.internalState.getSavedFilesMap();
     }
 
     public PeerFile getSavedFile(String fileId) {

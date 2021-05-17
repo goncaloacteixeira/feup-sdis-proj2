@@ -34,6 +34,10 @@ public abstract class ApplicationMessage extends Message {
                 return new Backup(sender, body);
             case "GET":
                 return new Get(sender, body);
+            case "DELETE":
+                return new Delete(sender, body);
+            case "REMOVED":
+                return new Removed(sender, body);
             default:
                 return null;
         }
