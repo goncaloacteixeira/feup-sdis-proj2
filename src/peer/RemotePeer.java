@@ -1,5 +1,6 @@
 package peer;
 
+import client.ClientCallbackInterface;
 import peer.chord.ChordReference;
 
 import java.rmi.Remote;
@@ -10,11 +11,13 @@ public interface RemotePeer extends Remote {
 
     ChordReference findSuccessor(int guid) throws RemoteException;
 
-    String backup(String filename, int replicationDegree) throws RemoteException;
+    void backup(String filename, int replicationDegree) throws RemoteException;
 
     String restore(String filename) throws RemoteException;
 
     String delete(String filename) throws RemoteException;
 
-    String state() throws RemoteException;
+    void register(ClientCallbackInterface callbackInterface) throws RemoteException;
+
+    void state() throws RemoteException;
 }

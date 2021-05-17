@@ -7,6 +7,8 @@ import peer.Peer;
 import peer.Utils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -93,6 +95,12 @@ public class PeerInternalState implements Serializable {
 
     public void commit() {
         try {
+            this.updateOccupation();
+        } catch (IOException e) {
+            log.error("Could not calculate occupation: {}", e.getMessage());
+        }
+
+        try {
             FileOutputStream fileOut = new FileOutputStream(DB_FILENAME);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(this);
@@ -100,9 +108,15 @@ public class PeerInternalState implements Serializable {
             out.close();
             fileOut.close();
         } catch (IOException i) {
-            i.printStackTrace();
+            log.error("Could not commit database: {}", i.getMessage());
         }
-        // this.updateOccupation();
+    }
+
+    private void updateOccupation() throws IOException {
+        ocupation = Files.walk(Path.of(PEER_DIR))
+                .filter(p -> p.toFile().isFile())
+                .mapToLong(p -> p.toFile().length())
+                .sum();
     }
 
     public void addSentFile(String filename, PeerFile file) {

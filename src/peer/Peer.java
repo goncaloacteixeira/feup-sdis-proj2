@@ -1,5 +1,6 @@
 package peer;
 
+import client.ClientCallbackInterface;
 import messages.Message;
 import messages.application.*;
 import org.apache.logging.log4j.LogManager;
@@ -35,6 +36,8 @@ public class Peer extends ChordPeer implements RemotePeer {
     private final static Logger log = LogManager.getLogger(Peer.class);
     private final String sap;
     private final ExecutorService executor = Executors.newFixedThreadPool(16);
+    private final ExecutorService clientRequests = Executors.newFixedThreadPool(8);
+    private ClientCallbackInterface callbackInterface;
 
     public static void main(String[] args) throws UnknownHostException {
         if (args.length < 3) {
@@ -74,14 +77,34 @@ public class Peer extends ChordPeer implements RemotePeer {
         this.sap = sap;
     }
 
+    public void register(ClientCallbackInterface callbackInterface) {
+        this.callbackInterface = callbackInterface;
+    }
+
     @Override
-    public String backup(String filename, int replicationDegree) {
+    public void backup(String filename, int replicationDegree) {
+        clientRequests.submit(() -> _backup(filename, replicationDegree));
+    }
+
+    private void sendNotification(String message) {
+        if (this.callbackInterface != null) {
+            try {
+                this.callbackInterface.notify(message);
+            } catch (RemoteException e) {
+                log.error("Could not send message: {}", e.getMessage());
+            }
+        }
+    }
+
+    private void _backup(String filename, int replicationDegree) {
         if (!this.isActive()) {
-            return "Peer's Server is not online yet!";
+            sendNotification("Peer's Server is not online yet!");
+            return;
         }
 
         if (this.successor() == null || this.successor().getGuid() == this.guid) {
-            return "Could not start BACKUP as this peer has not found other peers yet";
+            sendNotification("Could not start BACKUP as this peer has not found other peers yet");
+            return;
         }
 
         File file = new File(filename);
@@ -111,7 +134,8 @@ public class Peer extends ChordPeer implements RemotePeer {
             }
 
             if (targetPeers.size() == 0) {
-                return "Could not find Peers to Backup this file!";
+                sendNotification("Could not find Peers to Backup this file!");
+                return;
             }
 
             PeerFile peerFile;
@@ -149,16 +173,14 @@ public class Peer extends ChordPeer implements RemotePeer {
 
             this.internalState.addSentFile(filename, peerFile);
 
-            return result.toString();
+            sendNotification(result.toString());
         } catch (IOException e) {
-            return "Failed to BACKUP file: " + e.getMessage();
+            sendNotification("Failed to BACKUP file: " + e.getMessage());
         } catch (ExecutionException e) {
-            return "Failed to BACKUP file on one Peer: " + e.getMessage();
+            sendNotification("Failed to BACKUP file on one Peer: " + e.getMessage());
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            sendNotification("Interrupted Exception");
         }
-
-        return "File Backed Up!";
     }
 
     private String backup(ChordReference target, File file, Backup message, PeerFile peerFile) {
@@ -316,8 +338,21 @@ public class Peer extends ChordPeer implements RemotePeer {
     }
 
     @Override
-    public String state() throws RemoteException {
-        return this.internalState.toString();
+    public void state() throws RemoteException {
+        log.info("Received STATE client request");
+        clientRequests.submit(this::_state);
+    }
+
+    private String _state() {
+        String state = this.internalState.toString();
+        if (callbackInterface != null) {
+            try {
+                callbackInterface.notify(state);
+            } catch (RemoteException e) {
+                log.error("Could not notify client");
+            }
+        }
+        return state;
     }
 
     public String getFileLocation(String fileId) {

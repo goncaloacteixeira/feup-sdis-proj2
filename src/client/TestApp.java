@@ -5,21 +5,35 @@ import peer.RemotePeer;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 
-public class TestApp {
+public class TestApp implements ClientCallbackInterface {
+    @Override
+    public void notify(String message) {
+        System.out.println(message);
+        System.out.println("You can close this window now...");
+    }
+
     public static void main(String[] args) throws RemoteException {
         if (args.length < 2) {
             System.out.println("Usage: java client.Client <SAP> <OPERATION> <PARAM1> <PARAM2> ...");
             return;
         }
+
+        Registry registry = LocateRegistry.getRegistry("localhost");
+
+        ClientCallbackInterface callbackInterface = new TestApp();
+        UnicastRemoteObject.exportObject(callbackInterface, 0);
+
         String peer = args[0];
         String operation = args[1];
 
         RemotePeer stub;
 
         try {
-            Registry registry = LocateRegistry.getRegistry("localhost");
+
             stub = (RemotePeer) registry.lookup(peer);
+            stub.register(callbackInterface);
         } catch (Exception e) {
             System.err.println("Client exception: " + e);
             e.printStackTrace();
@@ -28,25 +42,30 @@ public class TestApp {
 
         switch (operation) {
             case "CHORD":
-                System.out.println(stub.chord());
+                stub.chord();
                 break;
             case "BACKUP":
-                System.out.println(stub.backup(args[2], Integer.parseInt(args[3])));
+                stub.backup(args[2], Integer.parseInt(args[3]));
                 break;
             case "LOOKUP":
-                System.out.println(stub.findSuccessor(Integer.parseInt(args[2])));
+                stub.findSuccessor(Integer.parseInt(args[2]));
                 break;
             case "STATE":
-                System.out.println(stub.state());
+                stub.state();
                 break;
             case "RESTORE":
-                System.out.println(stub.restore(args[2]));
+                stub.restore(args[2]);
                 break;
             case "DELETE":
-                System.out.println(stub.delete(args[2]));
+                stub.delete(args[2]);
                 break;
             default:
                 System.out.println("Invalid Operation!");
         }
+
+        System.out.print("Sent Request to Peer! Waiting reply...\r");
+
+        while (true)
+            ;
     }
 }
