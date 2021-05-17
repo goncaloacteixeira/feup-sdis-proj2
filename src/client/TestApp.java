@@ -38,8 +38,13 @@ public class TestApp {
                 break;
             case "STATE":
                 System.out.println(stub.state());
+                break;
             case "RESTORE":
                 System.out.println(stub.restore(args[2]));
+                break;
+            case "DELETE":
+                System.out.println(stub.delete(args[2]));
+                break;
             default:
                 System.out.println("Invalid Operation!");
         }

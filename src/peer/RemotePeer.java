@@ -14,5 +14,7 @@ public interface RemotePeer extends Remote {
 
     String restore(String filename) throws RemoteException;
 
+    String delete(String filename) throws RemoteException;
+
     String state() throws RemoteException;
 }

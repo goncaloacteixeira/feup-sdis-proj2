@@ -30,6 +30,10 @@ public abstract class AppOperation extends Operation {
                 return new BackupOp(connection, message, context);
             case "GET":
                 return new GetOp(connection, message, context);
+            case "DELETE":
+                return new DeleteOp(connection, message, context);
+            case "REMOVED":
+                return new RemovedOp(connection, message, context);
             default:
                 return null;
         }
