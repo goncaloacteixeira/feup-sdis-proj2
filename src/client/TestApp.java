@@ -11,7 +11,12 @@ public class TestApp implements ClientCallbackInterface {
     @Override
     public void notify(String message) {
         System.out.println(message);
-        System.out.println("You can close this window now...");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.exit(0);
     }
 
     public static void main(String[] args) throws RemoteException {
@@ -31,7 +36,6 @@ public class TestApp implements ClientCallbackInterface {
         RemotePeer stub;
 
         try {
-
             stub = (RemotePeer) registry.lookup(peer);
             stub.register(callbackInterface);
         } catch (Exception e) {
@@ -48,7 +52,7 @@ public class TestApp implements ClientCallbackInterface {
                 stub.backup(args[2], Integer.parseInt(args[3]));
                 break;
             case "LOOKUP":
-                stub.findSuccessor(Integer.parseInt(args[2]));
+                stub.clientFindSuccessor(Integer.parseInt(args[2]));
                 break;
             case "STATE":
                 stub.state();
