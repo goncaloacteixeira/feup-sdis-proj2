@@ -17,6 +17,8 @@ public interface RemotePeer extends Remote {
 
     void delete(String filename) throws RemoteException;
 
+    void reclaim(long size) throws RemoteException;
+
     void register(ClientCallbackInterface callbackInterface) throws RemoteException;
 
     void state() throws RemoteException;

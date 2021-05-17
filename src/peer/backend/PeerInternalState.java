@@ -43,6 +43,14 @@ public class PeerInternalState implements Serializable {
         this.scheduler.scheduleAtFixedRate(this::commit, 1, 5, TimeUnit.SECONDS);
     }
 
+    public long getOccupation() {
+        return occupation;
+    }
+
+    public void setCapacity(long capacity) {
+        this.capacity = capacity;
+    }
+
     public static PeerInternalState load(Peer peer) {
         PEER_DIR = String.format(PEER_DIR, peer.getGuid());
         DB_FILENAME = String.format(DB_FILENAME, peer.getGuid());
@@ -116,7 +124,7 @@ public class PeerInternalState implements Serializable {
         return size < (this.capacity - this.occupation);
     }
 
-    private void updateOccupation() throws IOException {
+    public void updateOccupation() throws IOException {
         occupation = Files.walk(Path.of(PEER_DIR))
                 .filter(p -> p.toFile().isFile())
                 .mapToLong(p -> p.toFile().length())

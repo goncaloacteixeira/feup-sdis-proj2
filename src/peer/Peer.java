@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.rmi.RemoteException;
@@ -344,6 +345,7 @@ public class Peer extends ChordPeer implements RemotePeer {
     }
 
     private void sendDelete(PeerFile file, ChordReference reference) {
+        file.beingDeleted = true;
         SSLConnection connection = this.connectToPeer(reference.getAddress());
         if (connection == null) return;
         this.send(connection, new Delete(this.getReference(), file.getId().getBytes(StandardCharsets.UTF_8)));
@@ -375,6 +377,47 @@ public class Peer extends ChordPeer implements RemotePeer {
 
     private void _clientFindSuccessor(int guid) {
         sendNotification(super.findSuccessor(guid).toString());
+    }
+
+    @Override
+    public void reclaim(long size) throws RemoteException {
+        clientRequests.submit(() -> _reclaim(size));
+    }
+
+    private void _reclaim(long size) {
+        for (Map.Entry<String, PeerFile> file : this.internalState.getSavedFilesMap().entrySet()) {
+            String fileId = file.getValue().getId();
+            ChordReference owner = file.getValue().getOwner();
+
+            try {
+                if (Files.deleteIfExists(Path.of(getFileLocation(fileId)))) {
+                    String body = String.join(":", Arrays.asList(fileId, String.valueOf(file.getKey())));
+
+                    SSLConnection connection = this.connectToPeer(owner.getAddress());
+                    assert connection != null;
+
+                    log.info("Removed file: {}", file);
+                    this.getSavedFilesMap().remove(fileId);
+                    this.send(connection, new Removed(getReference(), body.getBytes(StandardCharsets.UTF_8)));
+                }
+            } catch (IOException e) {
+                log.error("Error deleting file: {}: {}", file, e.getMessage());
+            }
+
+            try {
+                this.internalState.updateOccupation();
+            } catch (IOException e) {
+                log.error("Error updating occupation!");
+            }
+
+            // revoke all space allocated to storing files
+            if (size == 0) continue;
+            // reached desired space for storing files
+            if (this.internalState.getOccupation() <= size) break;
+        }
+
+        this.internalState.setCapacity(size == 0 ? Constants.DEFAULT_CAPACITY : size);
+        this.sendNotification("Reclaim Successful!");
     }
 
     public String getFileLocation(String fileId) {
