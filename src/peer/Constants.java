@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Level;
 public class Constants {
     public final static int CHUNK_SIZE = 10240;
     public final static int TLS_CHUNK_SIZE = 10269;
-    public final static long DEFAULT_CAPACITY = (long) Math.pow(2, 30); // 1GB
+    public final static long DEFAULT_CAPACITY = (long) Math.pow(2, 29); // 500MB
     public final static int REQUESTS_WORKERS = 16;
     public final static int ACKS_WORKERS = 128;
     public final static int TRIAGE_WORKERS = 64;

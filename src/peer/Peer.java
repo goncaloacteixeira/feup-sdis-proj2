@@ -381,6 +381,10 @@ public class Peer extends ChordPeer implements RemotePeer {
         return String.format(PeerInternalState.FILES_PATH, this.guid, fileId);
     }
 
+    public boolean hasSpace(double size) {
+        return this.internalState.hasSpace(size);
+    }
+
     public void addSavedFile(int key, String id, ChordReference owner, long size, int replicationDegree) {
         PeerFile file = new PeerFile(key, id, owner, size, replicationDegree);
         this.internalState.addSavedFile(file);
