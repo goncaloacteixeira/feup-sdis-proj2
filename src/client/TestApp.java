@@ -63,6 +63,9 @@ public class TestApp implements ClientCallbackInterface {
             case "DELETE":
                 stub.delete(args[2]);
                 break;
+            case "RECLAIM":
+                stub.reclaim(Long.parseLong(args[2]));
+                break;
             default:
                 System.out.println("Invalid Operation!");
         }

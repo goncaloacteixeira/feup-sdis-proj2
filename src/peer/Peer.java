@@ -15,7 +15,6 @@ import peer.ssl.SSLConnection;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Executable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -36,7 +35,7 @@ import java.util.concurrent.*;
 public class Peer extends ChordPeer implements RemotePeer {
     private final static Logger log = LogManager.getLogger(Peer.class);
     private final String sap;
-    private final ExecutorService executor = Executors.newFixedThreadPool(16);
+    public final ExecutorService PROTOCOL_EXECUTOR = Executors.newFixedThreadPool(16);
     private final ExecutorService clientRequests = Executors.newFixedThreadPool(8);
     private ClientCallbackInterface callbackInterface;
 
@@ -108,6 +107,8 @@ public class Peer extends ChordPeer implements RemotePeer {
             return;
         }
 
+        log.info("Starting BACKUP for {} with replication degree: {}", filename, replicationDegree);
+
         File file = new File(filename);
         BasicFileAttributes attributes;
         try {
@@ -118,7 +119,7 @@ public class Peer extends ChordPeer implements RemotePeer {
 
 
             List<Integer> keys = new ArrayList<>();
-            ThreadLocalRandom.current().ints(0, Constants.CHORD_MAX_PEERS).distinct().limit(replicationDegree * 3L).forEach(keys::add);
+            ThreadLocalRandom.current().ints(0, Constants.CHORD_MAX_PEERS).distinct().limit(replicationDegree * 4L).forEach(keys::add);
 
             log.info("Keys: {}", keys);
 
@@ -160,7 +161,7 @@ public class Peer extends ChordPeer implements RemotePeer {
                 Backup message = new Backup(this.getReference(), body.getBytes(StandardCharsets.UTF_8));
 
                 Callable<String> runnable = () -> backup(targetPeer, file, message, peerFile);
-                tasks.add(executor.submit(runnable));
+                tasks.add(PROTOCOL_EXECUTOR.submit(runnable));
             }
 
 
@@ -184,7 +185,7 @@ public class Peer extends ChordPeer implements RemotePeer {
         }
     }
 
-    private String backup(ChordReference target, File file, Backup message, PeerFile peerFile) {
+    public String backup(ChordReference target, File file, Backup message, PeerFile peerFile) {
         try {
             log.info("Starting backup for {} on Peer: {}", file.getName(), target);
             SSLConnection connection = this.connectToPeer(target.getAddress());
@@ -337,7 +338,7 @@ public class Peer extends ChordPeer implements RemotePeer {
             if (reference == null) continue;
             targetPeers.add(reference);
             Runnable executable = () -> sendDelete(file, reference);
-            executor.submit(executable);
+            PROTOCOL_EXECUTOR.submit(executable);
         }
 
         log.info("All DELETE requests processed!");
@@ -414,6 +415,8 @@ public class Peer extends ChordPeer implements RemotePeer {
             if (size == 0) continue;
             // reached desired space for storing files
             if (this.internalState.getOccupation() <= size) break;
+
+            sendNotification("Reclaim Successful");
         }
 
         this.internalState.setCapacity(size == 0 ? Constants.DEFAULT_CAPACITY : size);
