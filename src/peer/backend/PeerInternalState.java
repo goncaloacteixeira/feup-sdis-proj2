@@ -7,6 +7,8 @@ import peer.Peer;
 import peer.Utils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -25,7 +27,7 @@ public class PeerInternalState implements Serializable {
     private static transient String DB_FILENAME = "peer%d/data.ser";
 
     private long capacity = Constants.DEFAULT_CAPACITY;
-    private long ocupation;
+    private long occupation;
 
     private transient Peer peer;
 
@@ -38,7 +40,15 @@ public class PeerInternalState implements Serializable {
     }
 
     private void startAsyncChecks() {
-        this.scheduler.scheduleAtFixedRate(this::commit, 5, 20, TimeUnit.SECONDS);
+        this.scheduler.scheduleAtFixedRate(this::commit, 1, 5, TimeUnit.SECONDS);
+    }
+
+    public long getOccupation() {
+        return occupation;
+    }
+
+    public void setCapacity(long capacity) {
+        this.capacity = capacity;
     }
 
     public static PeerInternalState load(Peer peer) {
@@ -93,6 +103,12 @@ public class PeerInternalState implements Serializable {
 
     public void commit() {
         try {
+            this.updateOccupation();
+        } catch (IOException e) {
+            log.error("Could not calculate occupation: {}", e.getMessage());
+        }
+
+        try {
             FileOutputStream fileOut = new FileOutputStream(DB_FILENAME);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(this);
@@ -100,9 +116,19 @@ public class PeerInternalState implements Serializable {
             out.close();
             fileOut.close();
         } catch (IOException i) {
-            i.printStackTrace();
+            log.error("Could not commit database: {}", i.getMessage());
         }
-        // this.updateOccupation();
+    }
+
+    public boolean hasSpace(double size) {
+        return size < (this.capacity - this.occupation);
+    }
+
+    public void updateOccupation() throws IOException {
+        occupation = Files.walk(Path.of(PEER_DIR))
+                .filter(p -> p.toFile().isFile())
+                .mapToLong(p -> p.toFile().length())
+                .sum();
     }
 
     public void addSentFile(String filename, PeerFile file) {
@@ -142,7 +168,7 @@ public class PeerInternalState implements Serializable {
         }
         ret.append("----- Storage -----").append("\n");
         ret.append(String.format("Capacity: %s\n", Utils.prettySize(this.capacity)));
-        // ret.append(String.format("Occupation: %.2fKB\n", this.occupation / 1000.0));
+        ret.append(String.format("Occupation: %s\n", Utils.prettySize(this.occupation)));
         ret.append("-------------- END OF REPORT --------------").append("\n");
 
         return ret.toString();

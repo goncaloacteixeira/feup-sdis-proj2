@@ -13,6 +13,7 @@ public class PeerFile implements Serializable {
     private final long size;
     private final int replicationDegree;
     private final Set<Integer> keys = new HashSet<>();
+    public boolean beingDeleted = false;
 
     public PeerFile(int key, String id, ChordReference owner, long size, int replicationDegree) {
         // key -1 means it belongs to this peer

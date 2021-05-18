@@ -1,5 +1,6 @@
 package peer;
 
+import client.ClientCallbackInterface;
 import messages.Message;
 import messages.application.*;
 import org.apache.logging.log4j.LogManager;
@@ -14,7 +15,6 @@ import peer.ssl.SSLConnection;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Executable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.rmi.RemoteException;
@@ -34,7 +35,9 @@ import java.util.concurrent.*;
 public class Peer extends ChordPeer implements RemotePeer {
     private final static Logger log = LogManager.getLogger(Peer.class);
     private final String sap;
-    private final ExecutorService executor = Executors.newFixedThreadPool(16);
+    public final ExecutorService PROTOCOL_EXECUTOR = Executors.newFixedThreadPool(16);
+    private final ExecutorService clientRequests = Executors.newFixedThreadPool(8);
+    private ClientCallbackInterface callbackInterface;
 
     public static void main(String[] args) throws UnknownHostException {
         if (args.length < 3) {
@@ -74,15 +77,37 @@ public class Peer extends ChordPeer implements RemotePeer {
         this.sap = sap;
     }
 
+    public void register(ClientCallbackInterface callbackInterface) {
+        this.callbackInterface = callbackInterface;
+    }
+
     @Override
-    public String backup(String filename, int replicationDegree) {
+    public void backup(String filename, int replicationDegree) {
+        clientRequests.submit(() -> _backup(filename, replicationDegree));
+    }
+
+    private void sendNotification(String message) {
+        if (this.callbackInterface != null) {
+            try {
+                this.callbackInterface.notify(message);
+            } catch (RemoteException e) {
+                log.error("Caught an exception on RMI");
+            }
+        }
+    }
+
+    private void _backup(String filename, int replicationDegree) {
         if (!this.isActive()) {
-            return "Peer's Server is not online yet!";
+            sendNotification("Peer's Server is not online yet!");
+            return;
         }
 
         if (this.successor() == null || this.successor().getGuid() == this.guid) {
-            return "Could not start BACKUP as this peer has not found other peers yet";
+            sendNotification("Could not start BACKUP as this peer has not found other peers yet");
+            return;
         }
+
+        log.info("Starting BACKUP for {} with replication degree: {}", filename, replicationDegree);
 
         File file = new File(filename);
         BasicFileAttributes attributes;
@@ -94,7 +119,7 @@ public class Peer extends ChordPeer implements RemotePeer {
 
 
             List<Integer> keys = new ArrayList<>();
-            ThreadLocalRandom.current().ints(0, Constants.CHORD_MAX_PEERS).distinct().limit(replicationDegree * 3L).forEach(keys::add);
+            ThreadLocalRandom.current().ints(0, Constants.CHORD_MAX_PEERS).distinct().limit(replicationDegree * 4L).forEach(keys::add);
 
             log.info("Keys: {}", keys);
 
@@ -111,7 +136,8 @@ public class Peer extends ChordPeer implements RemotePeer {
             }
 
             if (targetPeers.size() == 0) {
-                return "Could not find Peers to Backup this file!";
+                sendNotification("Could not find Peers to Backup this file!");
+                return;
             }
 
             PeerFile peerFile;
@@ -135,7 +161,7 @@ public class Peer extends ChordPeer implements RemotePeer {
                 Backup message = new Backup(this.getReference(), body.getBytes(StandardCharsets.UTF_8));
 
                 Callable<String> runnable = () -> backup(targetPeer, file, message, peerFile);
-                tasks.add(executor.submit(runnable));
+                tasks.add(PROTOCOL_EXECUTOR.submit(runnable));
             }
 
 
@@ -149,19 +175,17 @@ public class Peer extends ChordPeer implements RemotePeer {
 
             this.internalState.addSentFile(filename, peerFile);
 
-            return result.toString();
+            sendNotification(result.toString());
         } catch (IOException e) {
-            return "Failed to BACKUP file: " + e.getMessage();
+            sendNotification("Failed to BACKUP file: " + e.getMessage());
         } catch (ExecutionException e) {
-            return "Failed to BACKUP file on one Peer: " + e.getMessage();
+            sendNotification("Failed to BACKUP file on one Peer: " + e.getMessage());
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            sendNotification("Interrupted Exception");
         }
-
-        return "File Backed Up!";
     }
 
-    private String backup(ChordReference target, File file, Backup message, PeerFile peerFile) {
+    public String backup(ChordReference target, File file, Backup message, PeerFile peerFile) {
         try {
             log.info("Starting backup for {} on Peer: {}", file.getName(), target);
             SSLConnection connection = this.connectToPeer(target.getAddress());
@@ -259,11 +283,18 @@ public class Peer extends ChordPeer implements RemotePeer {
     }
 
     @Override
-    public String restore(String filename) throws RemoteException {
+    public void restore(String filename) throws RemoteException {
+        clientRequests.submit(() -> _restore(filename));
+    }
+
+    private void _restore(String filename) {
         log.info("Starting RESTORE protocol for: {}", filename);
 
         PeerFile peerFile = this.internalState.getSentFilesMap().get(filename);
-        if (peerFile == null) return "File was not backed up: " + filename;
+        if (peerFile == null) {
+            sendNotification("File was not backed up: " + filename);
+            return;
+        }
 
         String newFilename = "restored_" + new File(filename).getName();
 
@@ -276,22 +307,28 @@ public class Peer extends ChordPeer implements RemotePeer {
             boolean result = this.receiveFile(connection, peerFile, newFilename);
             if (result) {
                 log.info("Restored file: {} under: {}", filename, newFilename);
-                return "File: " + filename + " restored successfully!";
+                sendNotification("File: " + filename + " restored successfully!");
+                return;
             }
         }
 
-        return "File: " + filename + " could not be restored!";
+        sendNotification("File: " + filename + " could not be restored!");
     }
 
     @Override
-    public String delete(String filename) throws RemoteException {
+    public void delete(String filename) throws RemoteException {
+        clientRequests.submit(() -> _delete(filename));
+    }
+
+    private void _delete(String filename) {
         log.info("Starting DELETE client request for {}", filename);
 
         PeerFile file = this.internalState.getSentFilesMap().get(filename);
 
         if (file == null) {
             log.error("File {} is not backed up", filename);
-            return String.format("File %s was not backed up!", filename);
+            sendNotification(String.format("File %s was not backed up!", filename));
+            return;
         }
 
         Set<ChordReference> targetPeers = new HashSet<>();
@@ -301,14 +338,15 @@ public class Peer extends ChordPeer implements RemotePeer {
             if (reference == null) continue;
             targetPeers.add(reference);
             Runnable executable = () -> sendDelete(file, reference);
-            executor.submit(executable);
+            PROTOCOL_EXECUTOR.submit(executable);
         }
 
         log.info("All DELETE requests processed!");
-        return String.format("DELETE for %s was sent to:\n%s", filename, targetPeers);
+        sendNotification(String.format("DELETE for %s was sent to:\n%s", filename, targetPeers));
     }
 
     private void sendDelete(PeerFile file, ChordReference reference) {
+        file.beingDeleted = true;
         SSLConnection connection = this.connectToPeer(reference.getAddress());
         if (connection == null) return;
         this.send(connection, new Delete(this.getReference(), file.getId().getBytes(StandardCharsets.UTF_8)));
@@ -316,12 +354,81 @@ public class Peer extends ChordPeer implements RemotePeer {
     }
 
     @Override
-    public String state() throws RemoteException {
-        return this.internalState.toString();
+    public void state() throws RemoteException {
+        log.info("Received STATE client request");
+        clientRequests.submit(this::_state);
+    }
+
+    private String _state() {
+        String state = this.internalState.toString();
+        if (callbackInterface != null) {
+            try {
+                callbackInterface.notify(state);
+            } catch (RemoteException e) {
+                log.error("Could not notify client");
+            }
+        }
+        return state;
+    }
+
+    @Override
+    public void clientFindSuccessor(int guid) {
+        clientRequests.submit(() -> _clientFindSuccessor(guid));
+    }
+
+    private void _clientFindSuccessor(int guid) {
+        sendNotification(super.findSuccessor(guid).toString());
+    }
+
+    @Override
+    public void reclaim(long size) throws RemoteException {
+        clientRequests.submit(() -> _reclaim(size));
+    }
+
+    private void _reclaim(long size) {
+        for (Map.Entry<String, PeerFile> file : this.internalState.getSavedFilesMap().entrySet()) {
+            String fileId = file.getValue().getId();
+            ChordReference owner = file.getValue().getOwner();
+
+            try {
+                if (Files.deleteIfExists(Path.of(getFileLocation(fileId)))) {
+                    String body = String.join(":", Arrays.asList(fileId, String.valueOf(file.getKey())));
+
+                    SSLConnection connection = this.connectToPeer(owner.getAddress());
+                    assert connection != null;
+
+                    log.info("Removed file: {}", file);
+                    this.getSavedFilesMap().remove(fileId);
+                    this.send(connection, new Removed(getReference(), body.getBytes(StandardCharsets.UTF_8)));
+                }
+            } catch (IOException e) {
+                log.error("Error deleting file: {}: {}", file, e.getMessage());
+            }
+
+            try {
+                this.internalState.updateOccupation();
+            } catch (IOException e) {
+                log.error("Error updating occupation!");
+            }
+
+            // revoke all space allocated to storing files
+            if (size == 0) continue;
+            // reached desired space for storing files
+            if (this.internalState.getOccupation() <= size) break;
+
+            sendNotification("Reclaim Successful");
+        }
+
+        this.internalState.setCapacity(size == 0 ? Constants.DEFAULT_CAPACITY : size);
+        this.sendNotification("Reclaim Successful!");
     }
 
     public String getFileLocation(String fileId) {
         return String.format(PeerInternalState.FILES_PATH, this.guid, fileId);
+    }
+
+    public boolean hasSpace(double size) {
+        return this.internalState.hasSpace(size);
     }
 
     public void addSavedFile(int key, String id, ChordReference owner, long size, int replicationDegree) {
@@ -347,16 +454,15 @@ public class Peer extends ChordPeer implements RemotePeer {
 
     public void start() {
         this.join();
-        // this.startPeriodicChecks();
     }
 
     @Override
-    public String chord() {
-        return "GUID: " + this.guid + "\n" +
+    public void chord() {
+        sendNotification("GUID: " + this.guid + "\n" +
                 "Server Address: " + this.address + "\n" +
                 "Predecessor: " + this.predecessor + "\n" +
                 "Finger Table:" + "\n" +
-                this.getRoutingTableString();
+                this.getRoutingTableString());
     }
 
     public String getServiceAccessPoint() {

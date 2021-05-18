@@ -33,7 +33,7 @@ public class BackupOp extends AppOperation {
         int replicationDegree = ((Backup) message).getReplicationDegree();
 
         // test capacity
-        if (false) {
+        if (!context.hasSpace(size)) {
             log.info("No space to store file with size: {}", Utils.prettySize(size));
             context.send(this.connection, new Nack(this.context.getReference(), "NOSPACE".getBytes(StandardCharsets.UTF_8)));
             return;
