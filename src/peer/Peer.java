@@ -32,6 +32,11 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 import java.util.concurrent.*;
 
+/**
+ * Main class for the System, the peer is responsible for the execution of protocols and
+ * processing the client requests. The peer extends a Chord Peer which extends an SSL Peer. And this Peer
+ * implements the RemotePeer interface used for the client to submit requests.
+ */
 public class Peer extends ChordPeer implements RemotePeer {
     private final static Logger log = LogManager.getLogger(Peer.class);
     private final String sap;
@@ -39,6 +44,12 @@ public class Peer extends ChordPeer implements RemotePeer {
     private final ExecutorService clientRequests = Executors.newFixedThreadPool(8);
     private ClientCallbackInterface callbackInterface;
 
+    /**
+     * Main method to start the peer
+     *
+     * @param args Command Line Arguments
+     * @throws UnknownHostException On error getting the address passed by command line
+     */
     public static void main(String[] args) throws UnknownHostException {
         if (args.length < 3) {
             System.out.println("Usage: java Peer <Service Access Point> <BOOT PEER IP> <BOOT PEER PORT> [-b]");
@@ -72,20 +83,33 @@ public class Peer extends ChordPeer implements RemotePeer {
         }
     }
 
+    /**
+     * Peer Constructor
+     *
+     * @param address Own or boot peer address, depending on the boot flag
+     * @param boot    boot flag
+     * @param sap     Service Access Point, for the RMI
+     * @throws Exception On error creating the peer
+     */
     public Peer(InetSocketAddress address, boolean boot, String sap) throws Exception {
         super(address, boot);
         this.sap = sap;
     }
 
+    /**
+     * Method to register a client so this peer can send back notifications
+     *
+     * @param callbackInterface Client Interface (Callback)
+     */
     public void register(ClientCallbackInterface callbackInterface) {
         this.callbackInterface = callbackInterface;
     }
 
-    @Override
-    public void backup(String filename, int replicationDegree) {
-        clientRequests.submit(() -> _backup(filename, replicationDegree));
-    }
-
+    /**
+     * Method to send a notification back to the client
+     *
+     * @param message Message to be sent to client
+     */
     private void sendNotification(String message) {
         if (this.callbackInterface != null) {
             try {
@@ -96,6 +120,26 @@ public class Peer extends ChordPeer implements RemotePeer {
         }
     }
 
+    /**
+     * Method to start a backup operation by the client
+     *
+     * @param filename          Filename to be backed up
+     * @param replicationDegree Desired Replication degree
+     */
+    @Override
+    public void backup(String filename, int replicationDegree) {
+        clientRequests.submit(() -> _backup(filename, replicationDegree));
+    }
+
+    /**
+     * Private method to backup a file, this method generates 3 * <code>replication degree</code> keys to attempt
+     * to find <code>replication degree</code> peers to send the file to. For each peer it finds starts a new
+     * separate backup operation, this behaviour enhances the concurrency because this means we can send a file to
+     * multiple peers at the same time.
+     *
+     * @param filename          File to be backed up
+     * @param replicationDegree desired replication degree
+     */
     private void _backup(String filename, int replicationDegree) {
         if (!this.isActive()) {
             sendNotification("Peer's Server is not online yet!");
@@ -185,6 +229,17 @@ public class Peer extends ChordPeer implements RemotePeer {
         }
     }
 
+    /**
+     * Method to start a backup for a file to a peer. This method sends a BACKUP message, waits for an Acknowledgement
+     * from the remote peer, and then proceeds to send the file, after sending the file it waits for another ACK
+     * message so it can close the connection.
+     *
+     * @param target   Target Peer
+     * @param file     Target File
+     * @param message  Backup Message
+     * @param peerFile Peer File
+     * @return result of this operation
+     */
     public String backup(ChordReference target, File file, Backup message, PeerFile peerFile) {
         try {
             log.info("Starting backup for {} on Peer: {}", file.getName(), target);
@@ -229,6 +284,17 @@ public class Peer extends ChordPeer implements RemotePeer {
         return "Backup Successful on Peer " + target;
     }
 
+    /**
+     * Method to receive a file, the receiving procedure starts by sending a GET message, and then waiting for
+     * an acknowledgement signaling if the remote peer has the file and can send it or not, then another GET
+     * is sent and this peer starts waiting for the file bytes. After the bytes are received this peer closes
+     * the connection to the remote peer.
+     *
+     * @param connection Connection to be used
+     * @param peerFile   Peer File associated
+     * @param filename   Filename
+     * @return true if the file was successfully received
+     */
     public boolean receiveFile(SSLConnection connection, PeerFile peerFile, String filename) {
         log.info("Starting GET...");
 
@@ -282,11 +348,23 @@ public class Peer extends ChordPeer implements RemotePeer {
         }
     }
 
+    /**
+     * Method to restore a file, this method is called by the RMI client
+     *
+     * @param filename Filename for the file to be restored
+     * @throws RemoteException on error with RMI
+     */
     @Override
     public void restore(String filename) throws RemoteException {
         clientRequests.submit(() -> _restore(filename));
     }
 
+    /**
+     * Method to get the file, this method loops the file associated keys, and tries to receive
+     * the target file from the peers which are serving it.
+     *
+     * @param filename Target file's filename
+     */
     private void _restore(String filename) {
         log.info("Starting RESTORE protocol for: {}", filename);
 
@@ -315,11 +393,23 @@ public class Peer extends ChordPeer implements RemotePeer {
         sendNotification("File: " + filename + " could not be restored!");
     }
 
+    /**
+     * Method to delete a File, requested by the client
+     *
+     * @param filename Target File's Filename to be deleted
+     * @throws RemoteException on error with RMI
+     */
     @Override
     public void delete(String filename) throws RemoteException {
         clientRequests.submit(() -> _delete(filename));
     }
 
+    /**
+     * Method to delete a File, this method finds the successor for each associated key
+     * with the peer file, and sends a DELETE message for each one.
+     *
+     * @param filename Target's File Filename to be deleted
+     */
     private void _delete(String filename) {
         log.info("Starting DELETE client request for {}", filename);
 
@@ -345,6 +435,11 @@ public class Peer extends ChordPeer implements RemotePeer {
         sendNotification(String.format("DELETE for %s was sent to:\n%s", filename, targetPeers));
     }
 
+    /**
+     * Method to send a delete Message to a remove peer, related to a peer file
+     * @param file Context File
+     * @param reference Target Peer
+     */
     private void sendDelete(PeerFile file, ChordReference reference) {
         file.beingDeleted = true;
         SSLConnection connection = this.connectToPeer(reference.getAddress());
@@ -353,12 +448,20 @@ public class Peer extends ChordPeer implements RemotePeer {
         log.info("Sent DELETE to {} for {}", reference, file.getId());
     }
 
+    /**
+     * Method to Print The state for this Peer, client request
+     * @throws RemoteException on error with RMI
+     */
     @Override
     public void state() throws RemoteException {
         log.info("Received STATE client request");
         clientRequests.submit(this::_state);
     }
 
+    /**
+     * Method to send the state to the client
+     * @return the Internal State
+     */
     private String _state() {
         String state = this.internalState.toString();
         if (callbackInterface != null) {
@@ -371,20 +474,40 @@ public class Peer extends ChordPeer implements RemotePeer {
         return state;
     }
 
+    /**
+     * Method to find a successor for a guid, client request
+     * @param guid GUID to be found the successor of
+     */
     @Override
     public void clientFindSuccessor(int guid) {
         clientRequests.submit(() -> _clientFindSuccessor(guid));
     }
 
+    /**
+     * Method to send the notification (reply) to the client, when the successor for
+     * the guid is found
+     * @param guid target guid
+     */
     private void _clientFindSuccessor(int guid) {
         sendNotification(super.findSuccessor(guid).toString());
     }
 
+    /**
+     * Method to reclaim the storage, client request
+     * @param size Size to be reclaimed, if 0 it will delete every file and reset the capacity to the default
+     * @throws RemoteException on error with RMI
+     */
     @Override
     public void reclaim(long size) throws RemoteException {
         clientRequests.submit(() -> _reclaim(size));
     }
 
+    /**
+     * Method to reclaim the storage, this method deletes the necessary files, without a specific order,
+     * and sends a REMOVED message to the file's owner, signaling this peer is no longer serving a file,
+     * and the owner should start another backup operation for the file
+     * @param size target size, 0 if the client wishes to remove all files and reset the capacity
+     */
     private void _reclaim(long size) {
         for (Map.Entry<String, PeerFile> file : this.internalState.getSavedFilesMap().entrySet()) {
             String fileId = file.getValue().getId();

@@ -6,6 +6,9 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Peer File Class, stores the metadata related to a served file
+ */
 public class PeerFile implements Serializable {
     private final int key;
     private final String id;

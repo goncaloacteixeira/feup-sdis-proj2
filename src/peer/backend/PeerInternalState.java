@@ -15,6 +15,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * The Peer's Internal is managed by this class, it's responsible to keep everything in check,
+ * files served, files stored, etc.
+ */
 public class PeerInternalState implements Serializable {
     private static final Logger log = LogManager.getLogger(PeerInternalState.class);
 

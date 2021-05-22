@@ -6,6 +6,9 @@ import peer.chord.ChordReference;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+/**
+ * Remote Peer Interface Stub used for the RMI communication
+ */
 public interface RemotePeer extends Remote {
     void chord() throws RemoteException;
 

@@ -4,6 +4,10 @@ import javax.net.ssl.SSLEngine;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+/**
+ * Class Responsible for handling a connection, this class contains the associated socket channel, the engine used
+ * and the four byte buffers for the connection.
+ */
 public class SSLConnection {
     private final SocketChannel socketChannel;
     private final SSLEngine engine;

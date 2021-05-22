@@ -21,6 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
+/**
+ * Chord Peer extends an SSLPeer, the last provides a way to make connections to other peers, and
+ * safely transmit messages between them. This Chord Peer could be a layer above the SSL Peer, in this
+ * layer we do not want to be concerned with how the transport works.
+ */
 public abstract class ChordPeer extends SSLPeer {
     private final static Logger log = LogManager.getLogger(ChordPeer.class);
 
@@ -33,26 +38,51 @@ public abstract class ChordPeer extends SSLPeer {
     protected ExecutorService executorService = Executors.newFixedThreadPool(16);
     private int nextFinger = 1;
 
+    /**
+     * Constructor for the Chord Peer, it takes an Address and a (debug) Flag to signal if this peer
+     * should start the Chord Circle or not. The address is passed on to the SSL layer to start the server.
+     *
+     * @param address Address used to listen to client connections
+     * @param boot    (debug) flag used to signal if this peer should create the Chord Circle or not
+     * @throws Exception On error starting the SSLPeer
+     */
     public ChordPeer(InetSocketAddress address, boolean boot) throws Exception {
         super(address, boot);
         this.boot = boot;
         this.bootPeer = new ChordReference(address, -1);
     }
 
+    /**
+     * Method to start the async periodic checks, this check include the fixFingers, stabilize and checkPredecessor
+     * methods. This was implemented based on this paper on Chord: https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf
+     */
     protected void startPeriodicChecks() {
         scheduler.scheduleAtFixedRate(this::fixFingers, 1, 3, TimeUnit.SECONDS);
         scheduler.scheduleAtFixedRate(this::stabilize, 3, 5, TimeUnit.SECONDS);
         scheduler.scheduleAtFixedRate(this::checkPredecessor, 5, 15, TimeUnit.SECONDS);
     }
 
+    /**
+     * @return the immediate successor for this peer
+     */
     public synchronized ChordReference successor() {
         return routingTable[0];
     }
 
+    /**
+     * @param position position to get a finger [1, M]
+     * @return the N-th finger [1, M]
+     */
     public synchronized ChordReference getFinger(int position) {
         return routingTable[position - 1];
     }
 
+    /**
+     * Method to set the n-th finger [1, M]
+     *
+     * @param position position to set the finger [1, M]
+     * @param finger   finger to be set
+     */
     public synchronized void setFinger(int position, ChordReference finger) {
         this.routingTable[position - 1] = finger;
     }
@@ -69,6 +99,14 @@ public abstract class ChordPeer extends SSLPeer {
         return bootPeer;
     }
 
+    /**
+     * <h1>Join Method</h1>
+     * This method attempts to insert this peer on the Chord Network, if this peer is not declared as boot.
+     * It sends a JOIN message to the boot peer (passed as argument on the startup) and waits for a GUID message,
+     * then it will ask the boot peer for it's successor.
+     *
+     * @return true if the join was successful
+     */
     public boolean join() {
         if (this.boot) {
             this.guid = generateNewKey(this.address);
@@ -153,13 +191,20 @@ public abstract class ChordPeer extends SSLPeer {
         return true;
     }
 
+    /**
+     * Method to reclaim a file which should be on this peer
+     *
+     * @param file File to be reclaimed
+     * @return the reclaimed peer file
+     * @see PeerFile
+     */
     private PeerFile reclaimFile(PeerFile file) {
         SSLConnection newConnection = this.connectToPeer(successor().getAddress());
         boolean result = ((Peer) this).receiveFile(newConnection, file, file.getId());
         // connection is closed on receive file because there's nothing left to do on close
 
         if (result) {
-            // send delete for file ID
+            // TODO send delete for file ID
         } else {
             return null;
         }
@@ -167,6 +212,13 @@ public abstract class ChordPeer extends SSLPeer {
         return file;
     }
 
+    /**
+     * Method to generate an hashed key based on a socket address. The hash used is SHA-1, and then it is converted to
+     * its hash code (integer)
+     *
+     * @param address Address to be hashed
+     * @return the hash's hash code
+     */
     public static int generateNewKey(InetSocketAddress address) {
         String toHash = address.getAddress().getHostAddress() + ":" + address.getPort();
         MessageDigest digest;
@@ -179,6 +231,10 @@ public abstract class ChordPeer extends SSLPeer {
         return new String(hashed).hashCode() & 0x7fffffff % Constants.CHORD_MAX_PEERS;
     }
 
+    /**
+     * Method used to promote this peer to boot peer.
+     */
+    @Deprecated
     private void promote() {
         this.guid = generateNewKey(this.address);
         this.bootPeer = new ChordReference(this.address, this.guid);
@@ -193,10 +249,21 @@ public abstract class ChordPeer extends SSLPeer {
         return routingTableToString(this.routingTable);
     }
 
+    /**
+     * Method to set this peer's successor
+     *
+     * @param finger Finger to be set as successor
+     */
     public synchronized void setSuccessor(ChordReference finger) {
         this.setFinger(1, finger);
     }
 
+    /**
+     * Method to return the routing table as a string, used to display the finger table in a human-readable way
+     *
+     * @param routingTable Finger table to use
+     * @return the finger table on a string format
+     */
     public static String routingTableToString(ChordReference[] routingTable) {
         List<String> entries = new ArrayList<>();
         for (int i = 0; i < Constants.M_BIT; i++) {
@@ -206,6 +273,12 @@ public abstract class ChordPeer extends SSLPeer {
         return String.join("\n", entries);
     }
 
+    /**
+     * Method to find a successor starting on this peer
+     *
+     * @param guid Target GUID
+     * @return the guid's successor
+     */
     public ChordReference findSuccessor(int guid) {
         ChordReference target;
         ChordReference self = new ChordReference(this.address, this.guid);
@@ -222,6 +295,13 @@ public abstract class ChordPeer extends SSLPeer {
         return target;
     }
 
+    /**
+     * This method asks target for the successor of guid
+     *
+     * @param target Target to ask the successor of guid
+     * @param guid   target guid
+     * @return the Successor for guid
+     */
     public ChordReference findSuccessor(ChordReference target, int guid) {
         if (target.getGuid() == this.guid) {
             log.debug("Successor is me: {}", target);
@@ -251,6 +331,11 @@ public abstract class ChordPeer extends SSLPeer {
         return predecessor;
     }
 
+    /**
+     * Method to ask the successor for it's predecessor, this is used for stabilizing the network
+     *
+     * @return The successor's predecessor
+     */
     private ChordReference getPredecessorFromSuccessor() {
         log.debug("Getting predecessor from successor...");
 
@@ -286,6 +371,11 @@ public abstract class ChordPeer extends SSLPeer {
         return reply.getPredecessor();
     }
 
+    /**
+     * Method to stabilize the network, this method checks if there's a peer which sould be this peer's
+     * successor, if that proves to be true updates the successor. In any case, it should notify this
+     * peer's successor that this peer is its predecessor
+     */
     private void stabilize() {
         log.debug("Performing stabilization...");
         ChordReference predecessor;
@@ -307,6 +397,9 @@ public abstract class ChordPeer extends SSLPeer {
 
     }
 
+    /**
+     * Method to fix a finger on the routing (finger) table
+     */
     private void fixFingers() {
         log.debug("Fixing finger:" + nextFinger);
         try {
@@ -328,6 +421,12 @@ public abstract class ChordPeer extends SSLPeer {
         this.predecessor = predecessor;
     }
 
+    /**
+     * Method to notify a peer that this peer should be its predecessor
+     *
+     * @param reference Peer to be notified
+     * @param context   Notification context (concerning peer)
+     */
     private void notifyPeer(ChordReference reference, ChordReference context) {
         log.debug(String.format("Notifying Peer:%d about Peer:%d", reference.getGuid(), context.getGuid()));
 
@@ -342,6 +441,12 @@ public abstract class ChordPeer extends SSLPeer {
         this.send(connection, message);
     }
 
+    /**
+     * Method to get the closest preceding node for a GUID
+     *
+     * @param guid GUID to look for
+     * @return the closest preceding node for GUID
+     */
     public ChordReference closestPrecedingNode(int guid) {
         for (int i = Constants.M_BIT; i >= 1; i--) {
             if (getFinger(i) == null) continue;
@@ -352,6 +457,16 @@ public abstract class ChordPeer extends SSLPeer {
         return new ChordReference(this.address, this.guid);
     }
 
+    /**
+     * Method to check if a certain key is between two other keys, this method supports right hand side
+     * exclusivity by setting a boolean flag
+     *
+     * @param key       Key to test
+     * @param lhs       Left hand Side
+     * @param rhs       Right hand Side
+     * @param exclusive Exclusivity Flag
+     * @return true if key is between the two other keys
+     */
     public static boolean between(int key, int lhs, int rhs, boolean exclusive) {
         if (exclusive) {
             return lhs < rhs ? (lhs < key && key < rhs) : (rhs > key || key > lhs);
@@ -360,6 +475,9 @@ public abstract class ChordPeer extends SSLPeer {
         }
     }
 
+    /**
+     * Method to check if the predecessor is online
+     */
     public void checkPredecessor() {
         if (predecessor != null) {
             SSLConnection connection = this.connectToPeer(predecessor.getAddress());

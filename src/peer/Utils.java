@@ -8,7 +8,16 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Utility Class
+ */
 public class Utils {
+    /**
+     * Method to print a progress bar
+     * @param current Current value
+     * @param total Max value
+     * @return a string with the progress bar
+     */
     public static String progressBar(long current, long total) {
         int size = 40;
 
@@ -20,6 +29,12 @@ public class Utils {
         return bar;
     }
 
+    /**
+     * Method to generate an Hash for a file with filename and modification date
+     * @param filename Filename
+     * @param attributes file attributes
+     * @return the hash requested
+     */
     public static String generateHashForFile(String filename, BasicFileAttributes attributes) {
         String modificationDate = String.valueOf(attributes.lastModifiedTime().toMillis());
         return hashToASCII(filename + modificationDate);
@@ -60,6 +75,11 @@ public class Utils {
         return new String(hexChars);
     }
 
+    /**
+     * Method to pretty print a Size in Bytes/Kilobytes/Megabytes/Gigabytes
+     * @param bytes Bytes to be pretty-print
+     * @return pretty-print bytes
+     */
     public static String prettySize(double bytes) {
         String type = "B";
         if (bytes / 1024 > 1) {
@@ -78,6 +98,13 @@ public class Utils {
         return String.format("%.2f %s", bytes, type);
     }
 
+    /**
+     * Method to calculate a rate based on the time passed and current flow
+     * @param start Start Time
+     * @param current Current Time
+     * @param bytes Flow
+     * @return rate with pretty print
+     */
     public static String rate(long start, long current, long bytes) {
         double delta = (current - start) / 1000.0;
         double rate = (double) bytes / delta;

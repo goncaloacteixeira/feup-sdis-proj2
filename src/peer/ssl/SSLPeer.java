@@ -20,6 +20,13 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Abstract Class intended to be used by an higher layer, containing application data to be transferred using
+ * this implementation. In this case, SSLPeer is extended by ChordPeer which transmits it's messages related to
+ * the Chord Network using SSL, and more precisely SSLEngine and Socket Channels.
+ *
+ * This SSL Peer contains an SSLServer for incoming connections and an SSLClient for outgoing connections and requests.
+ */
 public abstract class SSLPeer {
     public static final Logger log = LogManager.getLogger(SSLPeer.class);
 
@@ -53,6 +60,14 @@ public abstract class SSLPeer {
         return message.encode().length;
     }
 
+    /**
+     * Method to start the SSLPeer, this method uses the boot peer address if the peer is signaled to be
+     * boot peer or creates a new server socket channel with the first free port.
+     *
+     * @param bootAddress Boot Peer address
+     * @param boot        boot flag
+     * @throws Exception on error starting the peer
+     */
     public SSLPeer(InetSocketAddress bootAddress, boolean boot) throws Exception {
         if (boot) {
             this.address = bootAddress;
@@ -78,6 +93,14 @@ public abstract class SSLPeer {
         return server.active;
     }
 
+    /**
+     * Higher implementation for peer connections, the error handling is performed here, if any
+     * error occurs the higher layer will receive null for the connection stating that the connection
+     * could not be established.
+     *
+     * @param address Address to connect to
+     * @return an SSLConnection if the connection was successful or null otherwise
+     */
     public synchronized SSLConnection connectToPeer(InetSocketAddress address) {
         try {
             log.debug("Connecting to peer: " + address);
@@ -88,6 +111,9 @@ public abstract class SSLPeer {
         return null;
     }
 
+    /**
+     * Higher method to send a Message, returns true on success
+     */
     public boolean send(SSLConnection connection, Message message) {
         try {
             this.client.send(connection, message);
@@ -98,6 +124,9 @@ public abstract class SSLPeer {
         return false;
     }
 
+    /**
+     * Higher method to receive a message, returns a message on success or null otherwise
+     */
     public Message receive(SSLConnection connection) {
         try {
             return this.client.receive(connection);
@@ -107,6 +136,15 @@ public abstract class SSLPeer {
         return null;
     }
 
+    /**
+     * Method to receive a message with blocking mode, this method also uses a time to read parameter so it
+     * can wait different periods depending on the client's needs
+     *
+     * @param connection Connection to be used
+     * @param timeToRead Time to read used
+     * @return the message read
+     * @throws MessageTimeoutException on timeout reading the message.
+     */
     public Message receiveBlocking(SSLConnection connection, int timeToRead) throws MessageTimeoutException {
         Message reply;
         int attempt = 0;
@@ -126,6 +164,13 @@ public abstract class SSLPeer {
         return reply;
     }
 
+    /**
+     * Method to receive a file with a known size
+     *
+     * @param connection  Connection to be used
+     * @param fileChannel File Channel to be used
+     * @param size        File's Size in Bytes
+     */
     public void receiveFile(SSLConnection connection, FileChannel fileChannel, long size) {
         try {
             final long started = System.currentTimeMillis();
@@ -143,7 +188,7 @@ public abstract class SSLPeer {
                         Utils.rate(started, System.currentTimeMillis(), total)
                 );
                 if (bytes < 0 || total == size) {
-                    System.out.printf("Received (%s): %s\n",  Utils.prettySize(size), Utils.progressBar(total, size));
+                    System.out.printf("Received (%s): %s\n", Utils.prettySize(size), Utils.progressBar(total, size));
                     return;
                 }
             }
@@ -152,6 +197,12 @@ public abstract class SSLPeer {
         }
     }
 
+    /**
+     * Method to send a file to another peer
+     *
+     * @param connection  connection to be Used
+     * @param fileChannel File Channel Used to read the file from the system
+     */
     public void sendFile(SSLConnection connection, FileChannel fileChannel) {
         try {
             this.client.sendFile(connection, fileChannel);
@@ -160,10 +211,22 @@ public abstract class SSLPeer {
         }
     }
 
+    /**
+     * Method to handle a notification, this is called by the server when a new message is received
+     *
+     * @param message    Message Received
+     * @param connection Connection used
+     */
     public void handleNotification(Object message, SSLConnection connection) {
         executor.submit(((Message) message).getOperation((Peer) this, connection));
     }
 
+    /**
+     * Higher method to close the connection
+     *
+     * @param connection connection used
+     * @return true if the closing operation was successful, false otherwise
+     */
     public boolean closeConnection(SSLConnection connection) {
         try {
             this.client.closeConnection(connection);

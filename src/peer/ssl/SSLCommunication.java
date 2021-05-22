@@ -19,6 +19,12 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Class Responsible to transport and receive the data, and other mechanisms related to SSLEngine complex
+ * functioning
+ *
+ * @param <M> Message Type to be exchanged
+ */
 public class SSLCommunication<M> {
     private final Logger log = LogManager.getLogger(SSLCommunication.class);
     private final Decoder<M> decoder;
@@ -26,12 +32,26 @@ public class SSLCommunication<M> {
     private final Sizer<M> sizer;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
+    /**
+     * Constructor for an SSLCommunication, it takes the decoder/encoder/sizer for the message conversion
+     *
+     * @param decoder Decoder used
+     * @param encoder Encoder used
+     * @param sizer   Sizer used
+     */
     public SSLCommunication(Decoder<M> decoder, Encoder<M> encoder, Sizer<M> sizer) {
         this.decoder = decoder;
         this.encoder = encoder;
         this.sizer = sizer;
     }
 
+    /**
+     * Method to receive a Message from the socket contained on the SSLConnection
+     *
+     * @param connection Connection used to receive a message
+     * @return a decoded Message
+     * @throws Exception on error reading the message
+     */
     M receive(SSLConnection connection) throws Exception {
         log.debug("Reading data...");
 
@@ -90,6 +110,13 @@ public class SSLCommunication<M> {
         return null;
     }
 
+    /**
+     * Method to send a message by a connection
+     *
+     * @param connection Connection to be used to send the message
+     * @param message    message to be sent
+     * @throws IOException on error sending the message
+     */
     public void send(SSLConnection connection, M message) throws IOException {
         log.debug("Writing message...");
 
@@ -124,6 +151,14 @@ public class SSLCommunication<M> {
         }
     }
 
+    /**
+     * Method to close the connection passed, this method closes the outbound, sending a close_notify,
+     * performs an handshake and then closes the socket. This is the default procedure according to the
+     * RFC 2246 https://datatracker.ietf.org/doc/html/rfc2246
+     *
+     * @param connection Connection to be closed
+     * @throws IOException on error closing the connection
+     */
     public void closeConnection(SSLConnection connection) throws IOException {
         log.debug("Closing connection...");
         connection.getEngine().closeOutbound();
@@ -132,6 +167,13 @@ public class SSLCommunication<M> {
         log.debug("Connection closed successfully!");
     }
 
+    /**
+     * State Machine to perform an handshake using the SSLEngine
+     *
+     * @param connection Connection used for the handshake
+     * @return true if the handshake was successful
+     * @throws IOException on error performing the handshake
+     */
     protected boolean doHandshake(SSLConnection connection) throws IOException {
         log.debug("Starting handshake: {}", connection.getSocketChannel());
 
@@ -255,6 +297,13 @@ public class SSLCommunication<M> {
         return true;
     }
 
+    /**
+     * Method to send a File using a FileChannel
+     *
+     * @param connection  Connection to be used
+     * @param fileChannel File Channel used to read the file to be send
+     * @throws IOException on error sending/reading the file
+     */
     protected void sendFile(SSLConnection connection, FileChannel fileChannel) throws IOException, InterruptedException {
         SSLEngine engine = connection.getEngine();
 
@@ -291,6 +340,14 @@ public class SSLCommunication<M> {
         }
     }
 
+    /**
+     * Method to receive a file to a File Channel
+     *
+     * @param connection  connection to be used
+     * @param fileChannel File Channel used to write the file
+     * @return bytes written to the file
+     * @throws IOException on error Receiving/writing the file
+     */
     protected int receiveFile(SSLConnection connection, FileChannel fileChannel) throws IOException {
         SSLEngine engine = connection.getEngine();
 
@@ -360,14 +417,35 @@ public class SSLCommunication<M> {
         return bytesRead;
     }
 
+    /**
+     * Method to enlarge a net buffer
+     *
+     * @param engine SSL Engine used
+     * @param buffer Target Buffer
+     * @return an enlarged buffer
+     */
     protected ByteBuffer enlargePacketBuffer(SSLEngine engine, ByteBuffer buffer) {
         return enlargeBuffer(buffer, engine.getSession().getPacketBufferSize());
     }
 
+    /**
+     * Method to enlarge an app buffer
+     *
+     * @param engine SSL Engine used
+     * @param buffer Target Buffer
+     * @return an enlarged buffer
+     */
     protected ByteBuffer enlargeApplicationBuffer(SSLEngine engine, ByteBuffer buffer) {
         return enlargeBuffer(buffer, engine.getSession().getApplicationBufferSize());
     }
 
+    /**
+     * Method to enlarge a buffer
+     *
+     * @param buffer target buffer
+     * @param size   new target buffer size
+     * @return enlarget buffer
+     */
     protected ByteBuffer enlargeBuffer(ByteBuffer buffer, int size) {
         if (size > buffer.capacity()) {
             buffer = ByteBuffer.allocate(size);
@@ -377,6 +455,13 @@ public class SSLCommunication<M> {
         return buffer;
     }
 
+    /**
+     * Method to handle a buffer underflow buffer exception
+     *
+     * @param engine SSLEngine Responsible
+     * @param buffer target buffer
+     * @return the buffer or an enlarged buffer
+     */
     protected ByteBuffer handleBufferUnderflow(SSLEngine engine, ByteBuffer buffer) {
         if (engine.getSession().getPacketBufferSize() < buffer.limit()) {
             return buffer;
@@ -387,6 +472,13 @@ public class SSLCommunication<M> {
         return replaceBuffer;
     }
 
+    /**
+     * Method to deal with an end of stream from another peer. This should not happen but it is not forbidden
+     * by the RFC 2246. This could indicate a possible truncation attack.
+     *
+     * @param connection connection used
+     * @throws IOException on error closing the inbound or closing the connection
+     */
     protected void handleEndOfStream(SSLConnection connection) throws IOException {
         try {
             connection.getEngine().closeInbound();
@@ -396,6 +488,15 @@ public class SSLCommunication<M> {
         closeConnection(connection);
     }
 
+    /**
+     * Method to create a Key Manager
+     *
+     * @param filepath         path to the keystore
+     * @param keystorePassword keystore password
+     * @param keyPassword      key password
+     * @return a KeyManager Array
+     * @throws Exception on error creating the key manager
+     */
     protected static KeyManager[] createKeyManager(String filepath, String keystorePassword, String keyPassword) throws Exception {
         KeyStore keyStore = KeyStore.getInstance("JKS");
         try (InputStream is = new FileInputStream(filepath)) {
@@ -406,6 +507,14 @@ public class SSLCommunication<M> {
         return kmf.getKeyManagers();
     }
 
+    /**
+     * Method to create a Trust Manager
+     *
+     * @param filepath         path to the truststore
+     * @param keystorePassword keystore password
+     * @return a TrustManager Array
+     * @throws Exception on error creating the trust manager
+     */
     protected static TrustManager[] createTrustManager(String filepath, String keystorePassword) throws Exception {
         KeyStore trustStore = KeyStore.getInstance("JKS");
         try (InputStream is = new FileInputStream(filepath)) {

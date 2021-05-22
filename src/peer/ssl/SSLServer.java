@@ -20,6 +20,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Sever Side for the SSL Peer
+ *
+ * @param <M> Message type to be written/read
+ */
 public class SSLServer<M> extends SSLCommunication<M> {
     private final Logger log = LogManager.getLogger(getClass());
 
@@ -29,6 +34,16 @@ public class SSLServer<M> extends SSLCommunication<M> {
     public boolean active;
     private final List<SSLPeer> observers = new ArrayList<>();
 
+    /**
+     * Method to start the SSLServer
+     *
+     * @param context Context used by the server
+     * @param address Address used to create the server socket channel
+     * @param decoder decoder for the messages received
+     * @param encoder encoder for the messages sent
+     * @param sizer   sizer for the messages received/sent
+     * @throws IOException On error starting the SSL Server
+     */
     public SSLServer(SSLContext context, InetSocketAddress address, Decoder<M> decoder, Encoder<M> encoder, Sizer<M> sizer) throws IOException {
         super(decoder, encoder, sizer);
 
@@ -58,6 +73,9 @@ public class SSLServer<M> extends SSLCommunication<M> {
         this.observers.remove(peer);
     }
 
+    /**
+     * Publi method to start the server
+     */
     public void start() {
         try {
             this._start();
@@ -66,6 +84,12 @@ public class SSLServer<M> extends SSLCommunication<M> {
         }
     }
 
+    /**
+     * Method to start the server listening, this is a well-known type of loop for selectable channels, very
+     * important for the Non-Blocking operations as the selector handles everything for us.
+     *
+     * @throws Exception On error starting or while running the server
+     */
     private void _start() throws Exception {
         log.info("Online and waiting connections on: {}", this.address);
 
@@ -92,6 +116,18 @@ public class SSLServer<M> extends SSLCommunication<M> {
         log.debug("Shutdown");
     }
 
+    /**
+     * Method to notify the observers (typically just an SSLPeer) that a message was received, and (probably)
+     * an action is required, but that's not the server's responsibility, so this message is forwarded to the
+     * appropriate objects. Observer Pattern.
+     * <p>
+     * In addition this method also cancels the keys if the message received is a Backup or a Get, this behaviour
+     * is intended so we can control the flow of the restore and backup protocols.
+     *
+     * @param message    Message received
+     * @param connection Connection used
+     * @param key        Associated Key
+     */
     private void notify(M message, SSLConnection connection, SelectionKey key) {
         for (SSLPeer observer : observers) {
             if (message instanceof Backup || message instanceof Get) {
@@ -101,12 +137,21 @@ public class SSLServer<M> extends SSLCommunication<M> {
         }
     }
 
+    /**
+     * Method to stop this SSL Server
+     */
     public void stop() {
-        log.debug("[PEER] Peer will be closed...");
+        log.debug("Peer will be closed...");
         this.active = false;
         this.selector.wakeup();
     }
 
+    /**
+     * Method to accept a connection, and register this key as readable
+     *
+     * @param key Key containing the connection to be (potentially) accepted
+     * @throws Exception on error accepting the connection
+     */
     private void accept(SelectionKey key) throws Exception {
         log.debug("Received new connection request");
 

@@ -11,6 +11,10 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * This class contains primary information about a Node, this information contains an address and a GUID,
+ * this is all it takes for a peer to make a successful connection to another peer.
+ */
 public class ChordReference implements Serializable {
     private static final Logger log = LogManager.getLogger(ChordReference.class);
     private InetSocketAddress address;
