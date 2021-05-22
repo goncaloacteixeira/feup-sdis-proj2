@@ -7,6 +7,9 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+/**
+ * Test Application used to start requests on the P2P system
+ */
 public class TestApp implements ClientCallbackInterface {
     @Override
     public void notify(String message) {

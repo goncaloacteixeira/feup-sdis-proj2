@@ -6,6 +6,9 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 
+/**
+ * Utility class used to test if a socket is accepting connections
+ */
 public class TestSocket {
     public static void main(String[] args) {
         log(isSocketAlive("192.168.1.235", 8100));
