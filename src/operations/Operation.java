@@ -6,6 +6,9 @@ import peer.ssl.SSLConnection;
 import javax.net.ssl.SSLEngine;
 import java.nio.channels.SocketChannel;
 
+/**
+ * Operation Abstract Class
+ */
 public abstract class Operation implements Runnable {
     protected final SSLConnection connection;
 
