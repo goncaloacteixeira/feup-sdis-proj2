@@ -62,7 +62,8 @@ public class SSLCommunication<M> {
         connection.getPeerNetData().clear();
 
         int waitToRead = 50;
-        while (true) {
+        int attempts = 100;
+        while (attempts != 0) {
             int bytesRead = connection.getSocketChannel().read(connection.getPeerNetData());
             log.debug("Bytes read from socket: {}", bytesRead);
             if (bytesRead > 0) {
@@ -105,7 +106,9 @@ public class SSLCommunication<M> {
                 return null;
             }
             Thread.sleep(waitToRead);
+            attempts--;
         }
+        return null;
     }
 
     /**

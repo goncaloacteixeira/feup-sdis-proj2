@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLEngineResult;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -78,11 +77,25 @@ public class SSLClient<M> extends SSLCommunication<M> {
             return connection;
         }
 
+        /*// Send Connected Message and Wait for Reply
+        while (true) {
+            this.peer.send(connection, new Connected(((Peer) this.peer).getReference()));
+            Message reply = null;
+            try {
+                reply = this.peer.receiveBlocking(connection, 50);
+            } catch (MessageTimeoutException e) {
+                e.printStackTrace();
+            }
+            if (reply instanceof Connected) {
+                break;
+            }
+        }*/
+
         log.debug("Connected to Peer on: " + socketAddress);
 
         try {
             log.debug("Giving some time for the connection to be established...");
-            Thread.sleep(100);
+            Thread.sleep(500);
         } catch (InterruptedException ignored) { }
 
         return connection;

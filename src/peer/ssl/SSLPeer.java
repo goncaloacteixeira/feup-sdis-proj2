@@ -149,14 +149,15 @@ public abstract class SSLPeer {
         Message reply;
         int attempt = 0;
         connection.getPeerData().clear();
-        while ((reply = this.receive(connection)) == null && attempt < 50) {
+        reply = this.receive(connection);
+        /*while ((reply = this.receive(connection)) == null && attempt < 50) {
             attempt++;
             try {
                 Thread.sleep(timeToRead * 3L);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
         if (reply == null) {
             throw new MessageTimeoutException("Message took too long to receive!");
         }
