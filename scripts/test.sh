@@ -11,7 +11,7 @@
 # Check number input arguments
 
 if [ "$#" -lt 2 ]; then
-  echo "Usage: $0 <peer_ap> BACKUP|RESTORE|DELETE|RECLAIM|STATE [<opnd_1> [<optnd_2]]"
+  echo "Usage: $0 <peer_ap> BACKUP|RESTORE|DELETE|RECLAIM|STATE|CHORD|LOOKUP [<opnd_1> [<optnd_2]]"
   exit 1
 fi
 
@@ -33,14 +33,14 @@ BACKUP)
   ;;
 RESTORE)
   if [ "$#" -ne 3 ]; then
-    echo "Usage: $0 <peer_app> RESTORE <filename>"
+    echo "Usage: $0 <peer_ap> RESTORE <filename>"
   fi
   opernd_1=$3
   rep_deg=""
   ;;
 DELETE)
   if [ "$#" -ne 3 ]; then
-    echo "Usage: $0 <peer_app> DELETE <filename>"
+    echo "Usage: $0 <peer_ap> DELETE <filename>"
     exit 1
   fi
   opernd_1=$3
@@ -48,7 +48,7 @@ DELETE)
   ;;
 RECLAIM)
   if [ "$#" -ne 3 ]; then
-    echo "Usage: $0 <peer_app> RECLAIM <max space>"
+    echo "Usage: $0 <peer_ap> RECLAIM <max space>"
     exit 1
   fi
   opernd_1=$3
@@ -56,10 +56,26 @@ RECLAIM)
   ;;
 STATE)
   if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <peer_app> STATE"
+    echo "Usage: $0 <peer_ap> STATE"
     exit 1
   fi
   opernd_1=""
+  rep_deg=""
+  ;;
+CHORD)
+  if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <peer_ap> CHORD"
+    exit 1
+  fi
+  opernd_1=""
+  rep_deg=""
+  ;;
+LOOKUP)
+  if [ "$#" -ne 3 ]; then
+    echo "Usage: $0 <peer_ap> LOOKUP <node_guid>"
+    exit 1
+  fi
+  opernd_1=$3
   rep_deg=""
   ;;
 *)
