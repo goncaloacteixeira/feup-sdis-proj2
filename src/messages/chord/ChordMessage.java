@@ -7,8 +7,6 @@ import peer.Peer;
 import peer.chord.ChordReference;
 import peer.ssl.SSLConnection;
 
-import javax.net.ssl.SSLEngine;
-import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 
 public abstract class ChordMessage extends Message {

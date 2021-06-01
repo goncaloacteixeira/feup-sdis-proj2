@@ -8,10 +8,7 @@ import peer.Peer;
 import peer.chord.ChordPeer;
 import peer.ssl.SSLConnection;
 
-import javax.net.ssl.SSLEngine;
-import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 
 public class JoinOp extends ChordOperation {

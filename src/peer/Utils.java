@@ -1,9 +1,6 @@
 package peer;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -14,8 +11,9 @@ import java.security.NoSuchAlgorithmException;
 public class Utils {
     /**
      * Method to print a progress bar
+     *
      * @param current Current value
-     * @param total Max value
+     * @param total   Max value
      * @return a string with the progress bar
      */
     public static String progressBar(long current, long total) {
@@ -31,7 +29,8 @@ public class Utils {
 
     /**
      * Method to generate an Hash for a file with filename and modification date
-     * @param filename Filename
+     *
+     * @param filename   Filename
      * @param attributes file attributes
      * @return the hash requested
      */
@@ -77,6 +76,7 @@ public class Utils {
 
     /**
      * Method to pretty print a Size in Bytes/Kilobytes/Megabytes/Gigabytes
+     *
      * @param bytes Bytes to be pretty-print
      * @return pretty-print bytes
      */
@@ -100,9 +100,10 @@ public class Utils {
 
     /**
      * Method to calculate a rate based on the time passed and current flow
-     * @param start Start Time
+     *
+     * @param start   Start Time
      * @param current Current Time
-     * @param bytes Flow
+     * @param bytes   Flow
      * @return rate with pretty print
      */
     public static String rate(long start, long current, long bytes) {

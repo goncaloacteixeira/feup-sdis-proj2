@@ -3,8 +3,10 @@ package peer.backend;
 import peer.chord.ChordReference;
 
 import java.io.Serializable;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Peer File Class, stores the metadata related to a served file

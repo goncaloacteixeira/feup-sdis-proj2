@@ -1,15 +1,10 @@
 package operations.chord;
 
-import messages.chord.ChordMessage;
 import messages.chord.Notification;
 import peer.Peer;
 import peer.chord.ChordPeer;
 import peer.chord.ChordReference;
 import peer.ssl.SSLConnection;
-
-import javax.net.ssl.SSLEngine;
-import java.io.IOException;
-import java.nio.channels.SocketChannel;
 
 public class NotificationOp extends ChordOperation {
     public NotificationOp(SSLConnection connection, Notification message, Peer context) {

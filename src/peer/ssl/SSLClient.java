@@ -96,7 +96,8 @@ public class SSLClient<M> extends SSLCommunication<M> {
         try {
             log.debug("Giving some time for the connection to be established...");
             Thread.sleep(500);
-        } catch (InterruptedException ignored) { }
+        } catch (InterruptedException ignored) {
+        }
 
         return connection;
     }

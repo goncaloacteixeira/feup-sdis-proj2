@@ -437,7 +437,8 @@ public class Peer extends ChordPeer implements RemotePeer {
 
     /**
      * Method to send a delete Message to a remove peer, related to a peer file
-     * @param file Context File
+     *
+     * @param file      Context File
      * @param reference Target Peer
      */
     private void sendDelete(PeerFile file, ChordReference reference) {
@@ -450,6 +451,7 @@ public class Peer extends ChordPeer implements RemotePeer {
 
     /**
      * Method to Print The state for this Peer, client request
+     *
      * @throws RemoteException on error with RMI
      */
     @Override
@@ -460,6 +462,7 @@ public class Peer extends ChordPeer implements RemotePeer {
 
     /**
      * Method to send the state to the client
+     *
      * @return the Internal State
      */
     private String _state() {
@@ -476,6 +479,7 @@ public class Peer extends ChordPeer implements RemotePeer {
 
     /**
      * Method to find a successor for a guid, client request
+     *
      * @param guid GUID to be found the successor of
      */
     @Override
@@ -486,6 +490,7 @@ public class Peer extends ChordPeer implements RemotePeer {
     /**
      * Method to send the notification (reply) to the client, when the successor for
      * the guid is found
+     *
      * @param guid target guid
      */
     private void _clientFindSuccessor(int guid) {
@@ -494,6 +499,7 @@ public class Peer extends ChordPeer implements RemotePeer {
 
     /**
      * Method to reclaim the storage, client request
+     *
      * @param size Size to be reclaimed, if 0 it will delete every file and reset the capacity to the default
      * @throws RemoteException on error with RMI
      */
@@ -506,6 +512,7 @@ public class Peer extends ChordPeer implements RemotePeer {
      * Method to reclaim the storage, this method deletes the necessary files, without a specific order,
      * and sends a REMOVED message to the file's owner, signaling this peer is no longer serving a file,
      * and the owner should start another backup operation for the file
+     *
      * @param size target size, 0 if the client wishes to remove all files and reset the capacity
      */
     private void _reclaim(long size) {

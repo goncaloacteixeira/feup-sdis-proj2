@@ -1,7 +1,6 @@
 package peer;
 
 import client.ClientCallbackInterface;
-import peer.chord.ChordReference;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;

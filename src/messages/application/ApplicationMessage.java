@@ -1,10 +1,8 @@
 package messages.application;
 
 import messages.Message;
-import messages.chord.*;
 import operations.Operation;
 import operations.application.AppOperation;
-import operations.chord.ChordOperation;
 import peer.Peer;
 import peer.chord.ChordReference;
 import peer.ssl.SSLConnection;
