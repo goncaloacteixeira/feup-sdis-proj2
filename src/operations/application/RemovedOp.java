@@ -79,7 +79,10 @@ public class RemovedOp extends AppOperation {
                         ));
                 Backup message = new Backup(context.getReference(), body.getBytes(StandardCharsets.UTF_8));
 
-                File localFile = new File(context.getFileLocation(fileId));
+                File localFile = new File(context.getFileLocation(file.getKey()));
+                if (!localFile.exists()) {
+                    return;
+                }
 
                 ChordReference finalTargetPeer = targetPeer;
                 Map.Entry<String, PeerFile> finalFile = file;

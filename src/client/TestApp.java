@@ -13,6 +13,8 @@ import java.rmi.server.UnicastRemoteObject;
 public class TestApp implements ClientCallbackInterface {
     @Override
     public void notify(String message) {
+        System.out.println("Received Message:");
+
         System.out.println(message);
         try {
             Thread.sleep(1000);
