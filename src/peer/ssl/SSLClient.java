@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLEngineResult;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -55,9 +56,9 @@ public class SSLClient<M> extends SSLCommunication<M> {
         SSLEngine engine = context.createSSLEngine(socketAddress.getAddress().getHostAddress(), socketAddress.getPort());
         engine.setUseClientMode(true);
 
-        ByteBuffer appData = ByteBuffer.allocate(256);
+        ByteBuffer appData = ByteBuffer.allocate(engine.getSession().getApplicationBufferSize());
         ByteBuffer netData = ByteBuffer.allocate(engine.getSession().getPacketBufferSize());
-        ByteBuffer peerData = ByteBuffer.allocate(256);
+        ByteBuffer peerData = ByteBuffer.allocate(engine.getSession().getApplicationBufferSize());
         ByteBuffer peerNetData = ByteBuffer.allocate(engine.getSession().getPacketBufferSize());
 
         SocketChannel socketChannel = SocketChannel.open();
@@ -78,6 +79,12 @@ public class SSLClient<M> extends SSLCommunication<M> {
         }
 
         log.debug("Connected to Peer on: " + socketAddress);
+
+        try {
+            log.debug("Giving some time for the connection to be established...");
+            Thread.sleep(100);
+        } catch (InterruptedException ignored) { }
+
         return connection;
     }
 }
