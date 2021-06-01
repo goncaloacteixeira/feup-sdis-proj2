@@ -9,6 +9,7 @@ import java.rmi.RemoteException;
 public interface ClientCallbackInterface extends Remote {
     /**
      * Method to send a notification from the server to the client
+     *
      * @param message notification to be sent to the client
      * @throws RemoteException on error with RMI
      */

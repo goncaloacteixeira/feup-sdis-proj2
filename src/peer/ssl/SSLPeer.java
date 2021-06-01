@@ -14,7 +14,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
@@ -24,7 +23,7 @@ import java.util.concurrent.Executors;
  * Abstract Class intended to be used by an higher layer, containing application data to be transferred using
  * this implementation. In this case, SSLPeer is extended by ChordPeer which transmits it's messages related to
  * the Chord Network using SSL, and more precisely SSLEngine and Socket Channels.
- *
+ * <p>
  * This SSL Peer contains an SSLServer for incoming connections and an SSLClient for outgoing connections and requests.
  */
 public abstract class SSLPeer {
@@ -149,14 +148,15 @@ public abstract class SSLPeer {
         Message reply;
         int attempt = 0;
         connection.getPeerData().clear();
-        while ((reply = this.receive(connection)) == null && attempt < 50) {
+        reply = this.receive(connection);
+        /*while ((reply = this.receive(connection)) == null && attempt < 50) {
             attempt++;
             try {
                 Thread.sleep(timeToRead * 3L);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
         if (reply == null) {
             throw new MessageTimeoutException("Message took too long to receive!");
         }

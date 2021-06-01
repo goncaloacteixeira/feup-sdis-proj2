@@ -8,9 +8,6 @@ import peer.Peer;
 import peer.chord.ChordPeer;
 import peer.ssl.SSLConnection;
 
-import javax.net.ssl.SSLEngine;
-import java.nio.channels.SocketChannel;
-
 public abstract class ChordOperation extends Operation {
     protected final Logger log = LogManager.getLogger(ChordPeer.class);
 

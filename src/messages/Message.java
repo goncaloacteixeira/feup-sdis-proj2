@@ -7,8 +7,6 @@ import peer.Peer;
 import peer.chord.ChordReference;
 import peer.ssl.SSLConnection;
 
-import javax.net.ssl.SSLEngine;
-import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 
 /**
@@ -26,9 +24,10 @@ public abstract class Message {
 
     /**
      * Creates a message without body
-     * @param type Type of message (CHORD or APP)
+     *
+     * @param type      Type of message (CHORD or APP)
      * @param operation Type of operation
-     * @param sender Message's Original Sender
+     * @param sender    Message's Original Sender
      */
     public Message(String type, String operation, ChordReference sender) {
         this.type = type;
@@ -39,10 +38,11 @@ public abstract class Message {
 
     /**
      * Creates a message with body associated
-     * @param type Type of message (CHORD or APP)
+     *
+     * @param type      Type of message (CHORD or APP)
      * @param operation Type of operation
-     * @param sender Message's Original Sender
-     * @param body Message's Body
+     * @param sender    Message's Original Sender
+     * @param body      Message's Body
      */
     public Message(String type, String operation, ChordReference sender, byte[] body) {
         this.type = type;
@@ -53,16 +53,17 @@ public abstract class Message {
 
     /**
      * Abstract method to encode the message to a byte array format
+     *
      * @return a byte array containing the message bytes
      */
     public abstract byte[] encode();
 
     /**
      * Abstract method to return the associated operation
-     * @param context Peer responsible for the operation
+     *
+     * @param context    Peer responsible for the operation
      * @param connection Current Connection
      * @return an Operation
-     *
      * @see Operation
      */
     public abstract Operation getOperation(Peer context, SSLConnection connection);
@@ -70,8 +71,9 @@ public abstract class Message {
     /**
      * Method to parse the message, this method uses more specific implementations depending on the type of
      * message
+     *
      * @param buffer byte array containing the message's bytes
-     * @param size byte array size
+     * @param size   byte array size
      * @return a parsed Message
      */
     public static Message parse(byte[] buffer, int size) {

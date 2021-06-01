@@ -1,10 +1,6 @@
 package operations;
 
-import messages.Message;
 import peer.ssl.SSLConnection;
-
-import javax.net.ssl.SSLEngine;
-import java.nio.channels.SocketChannel;
 
 /**
  * Operation Abstract Class

@@ -1,16 +1,11 @@
 package operations.application;
 
 import messages.application.ApplicationMessage;
-import messages.chord.*;
 import operations.Operation;
-import operations.chord.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import peer.Peer;
 import peer.ssl.SSLConnection;
-
-import javax.net.ssl.SSLEngine;
-import java.nio.channels.SocketChannel;
 
 public abstract class AppOperation extends Operation {
     protected final Logger log = LogManager.getLogger(getClass());

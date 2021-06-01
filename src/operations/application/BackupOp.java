@@ -4,15 +4,12 @@ import messages.application.Ack;
 import messages.application.ApplicationMessage;
 import messages.application.Backup;
 import messages.application.Nack;
-import operations.chord.ChordOperation;
 import peer.Constants;
 import peer.Peer;
 import peer.Utils;
 import peer.chord.ChordReference;
 import peer.ssl.SSLConnection;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;

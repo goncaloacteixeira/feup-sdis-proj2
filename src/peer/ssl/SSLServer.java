@@ -7,7 +7,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLSession;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -98,19 +97,22 @@ public class SSLServer<M> extends SSLCommunication<M> {
             Iterator<SelectionKey> selectedKeys = selector.selectedKeys().iterator();
             while (selectedKeys.hasNext()) {
                 SelectionKey key = selectedKeys.next();
-                selectedKeys.remove();
                 if (!key.isValid()) {
+                    log.error("Key not valid: " + key);
                     continue;
                 }
                 if (key.isAcceptable()) {
                     this.accept(key);
                 } else if (key.isReadable()) {
+                    log.debug("About to read with key: {}", key.attachment());
+
                     M message = this.receive((SSLConnection) key.attachment());
 
                     if (message != null) {
                         this.notify(message, (SSLConnection) key.attachment(), key);
                     }
                 }
+                selectedKeys.remove();
             }
         }
         log.debug("Shutdown");
@@ -174,6 +176,7 @@ public class SSLServer<M> extends SSLCommunication<M> {
         engine.beginHandshake();
 
         connection.setHandshake(this.doHandshake(connection));
+        log.debug("Registered Key: {}", connection);
         socketChannel.register(this.selector, SelectionKey.OP_READ, connection);
     }
 }

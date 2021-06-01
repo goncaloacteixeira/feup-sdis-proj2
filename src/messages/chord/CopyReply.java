@@ -5,7 +5,6 @@ import peer.chord.ChordReference;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class CopyReply extends ChordMessage {
     private final List<PeerFile> files = new ArrayList<>();
