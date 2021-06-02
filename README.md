@@ -54,7 +54,7 @@ it will save the compiled classes, keystores and log4j2.xml (used on logger) to 
 
 - operation
 
-  BACKUP | RESTORE | DELETE | RECLAIM | STATE | CHORD | LOOKUP as described on table 2.1 ([report](report.pdf)), these operations have arguments associated.
+  BACKUP | RESTORE | DELETE | RECLAIM | STATE | CHORD | LOOKUP as described on table 2.1 ([report](doc/report.pdf)), these operations have arguments associated.
 
   
 
